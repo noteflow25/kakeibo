@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="かんたん家計簿">
@@ -98,7 +98,7 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
 .field-input,.field-select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-s);font-size:14px;font-family:inherit;color:var(--text);background:var(--bg);outline:none;}
 .field-input:focus,.field-select:focus{border-color:var(--green);}
 .cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:4px;align-content:start;}
-.cat-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 4px;border-radius:var(--radius-s);border:1.5px solid var(--border);background:none;cursor:pointer;font-size:10px;color:var(--sub);font-family:inherit;transition:all .2s;}
+.cat-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 4px;border-radius:var(--radius-s);border:1.5px solid var(--border);background:none;cursor:pointer;font-size:10px;color:var(--sub);font-family:inherit;transition:all .2s;touch-action:manipulation;}
 .cat-btn .cat-emoji{font-size:16px;}
 .cat-btn.selected{border-color:var(--green);background:var(--green-l);color:var(--green-d);}
 .submit-btn{width:100%;padding:14px;border-radius:var(--radius-s);border:none;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .2s;color:#fff;}
@@ -675,7 +675,7 @@ const BUDGET = {
 // ============================================================
 // バージョン情報
 // ============================================================
-const APP_VERSION = "2.0.10"; // ← 更新するたびに番号を上げる
+const APP_VERSION = "2.0.11"; // ← 更新するたびに番号を上げる
 
 // ============================================================
 // ストレージ
