@@ -675,7 +675,7 @@ const BUDGET = {
 // ============================================================
 // バージョン情報
 // ============================================================
-const APP_VERSION = "2.0.11"; // ← 更新するたびに番号を上げる
+const APP_VERSION = "2.0.12"; // ← 更新するたびに番号を上げる
 
 // ============================================================
 // ストレージ
@@ -781,6 +781,16 @@ function updatePeriodNavButtons() {
   document.querySelectorAll('.month-nav[data-dir="1"]').forEach(b  => { b.disabled = atLast;  b.style.opacity = atLast  ? .3 : 1; });
 }
 
+// ローカル日付（YYYY-MM-DD）を返す。
+// new Date().toISOString()はUTC基準のため、日本時間の深夜〜早朝に
+// 日付が1日ズレることがあるため、"今日"の判定には必ずこちらを使う。
+function localDateStr(d = new Date()) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
 function fmt(n) { return "¥" + n.toLocaleString("ja-JP"); }
 
 // ============================================================
@@ -836,7 +846,7 @@ function renderHome() {
   const { start } = periodRange(viewPeriodIndex);
   const nominalEnd = periodNominalEnd(start);
   const isLatestPeriod = viewPeriodIndex === periods.length - 1;
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = localDateStr();
   const totalDays = daysBetween(start, nominalEnd) + 1;
   const elapsedDaysRaw = daysBetween(start, todayStr) + 1;
   const elapsedDays = isLatestPeriod ? Math.max(Math.min(elapsedDaysRaw, totalDays), 0) : totalDays;
@@ -1023,7 +1033,7 @@ function submitTx() {
     cat: selectedCat,
     amount: amt,
     memo: document.getElementById("memoInput").value || "",
-    date: document.getElementById("dateInput").value || new Date().toISOString().slice(0,10),
+    date: document.getElementById("dateInput").value || localDateStr(),
   });
   saveTx(txs);
   adjustBalance(inputType === "expense" ? -amt : amt);
@@ -1180,7 +1190,7 @@ const ALLOWED_ORIGIN = "https://thidaka45.github.io";
 const DAILY_OCR_LIMIT = 10;
 
 function checkOcrLimit() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localDateStr();
   const key   = `ocr_count_${today}`;
   const count = parseInt(localStorage.getItem(key) || "0");
   if (count >= DAILY_OCR_LIMIT) return false;
@@ -1189,7 +1199,7 @@ function checkOcrLimit() {
 }
 
 function getOcrCount() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localDateStr();
   return parseInt(localStorage.getItem(`ocr_count_${today}`) || "0");
 }
 
@@ -1881,7 +1891,7 @@ const FIXED_COST_CATS = [
 function ensureCycle() {
   let c = loadCycle();
   if (!c) {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = localDateStr();
     c = { cycle_id: null, created_by: null, created_at: null, next_income_date: today, fixed_costs: [] };
   }
   let changed = !c.fixed_costs;
@@ -1952,7 +1962,7 @@ function renderCashflow() {
   document.getElementById("cfBalanceInput").value = state.available_balance || 0;
   document.getElementById("cfNextIncomeInput").value = cycle.next_income_date || "";
 
-  const days = Math.max(daysBetween(new Date().toISOString().slice(0, 10), cycle.next_income_date), 0);
+  const days = Math.max(daysBetween(localDateStr(), cycle.next_income_date), 0);
   document.getElementById("cfDaysRemaining").textContent = `残り${days}日`;
 
   const trend = calcVariableCostTrend();
@@ -2182,7 +2192,7 @@ function startNewMonth() {
     : "新しい月度を開始します。まず収入（給与など）を入力してください。よろしいですか？";
   if (!confirm(confirmMsg)) return;
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localDateStr();
 
   if (!isFirstTime) {
     const txs = loadTx();
@@ -2347,7 +2357,7 @@ function exportStateJson() {
   const savingsTotal = plans.reduce((s, p) => s + (p.monthly || 0), 0);
   const savingsBalance = plans.reduce((s, p) => s + (p.balance || 0), 0);
   const cycle = ensureCycle();
-  const days = Math.max(daysBetween(new Date().toISOString().slice(0, 10), cycle.next_income_date), 0);
+  const days = Math.max(daysBetween(localDateStr(), cycle.next_income_date), 0);
 
   downloadJson({
     updated_at: new Date().toISOString(),
@@ -2436,7 +2446,7 @@ function init() {
 
   receiveFromUrl();
 
-  const today = new Date().toISOString().slice(0,10);
+  const today = localDateStr();
   document.getElementById("dateInput").value = today;
 
   setType("expense");
