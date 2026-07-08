@@ -675,7 +675,7 @@ const BUDGET = {
 // ============================================================
 // バージョン情報
 // ============================================================
-const APP_VERSION = "2.0.12"; // ← 更新するたびに番号を上げる
+const APP_VERSION = "2.0.13"; // ← 更新するたびに番号を上げる
 
 // ============================================================
 // ストレージ
@@ -1382,6 +1382,7 @@ function showPage(name) {
     document.getElementById(`page-${p}`).classList.toggle("active", p===name);
     document.getElementById(`nav-${p}`).classList.toggle("active", p===name);
   });
+  if (name==="home")       renderHome();
   if (name==="graph")      renderGraph();
   if (name==="savings")    { renderSavings(); toggleFlowBanner("flowNextToFixed", newMonthFlowStep === "savings"); }
   if (name==="fixedcosts") { renderFixedCostsPage(); toggleFlowBanner("flowFinish", newMonthFlowStep === "fixedcosts"); }
