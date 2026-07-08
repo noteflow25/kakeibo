@@ -171,10 +171,19 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
   <div class="month-header">
     <button class="month-nav" data-dir="-1" onclick="changePeriod(-1)">‹</button>
     <span class="month-title" id="monthTitle"></span>
+    <button id="editPeriodStartBtn" onclick="openEditPeriodStart()" style="display:none;background:none;border:none;color:var(--sub);font-size:13px;cursor:pointer;padding:2px 6px;">✏️</button>
     <button class="month-nav" data-dir="1" onclick="changePeriod(1)">›</button>
   </div>
 
-  <!-- 残高カード -->
+  <!-- 開始日編集フォーム（進行中の月度のみ表示） -->
+  <div id="editPeriodStartForm" style="display:none;background:var(--card);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px;box-shadow:0 1px 8px rgba(0,0,0,.05);">
+    <div style="font-size:12px;color:var(--sub);margin-bottom:8px;">この月度の開始日を変更</div>
+    <div style="display:flex;gap:6px;align-items:center;">
+      <input class="field-input" id="editPeriodStartInput" type="date" style="flex:1;padding:8px 10px;font-size:14px;">
+      <button onclick="saveEditPeriodStart()" style="padding:8px 14px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;">保存</button>
+      <button onclick="closeEditPeriodStart()" style="padding:8px 10px;border-radius:8px;border:0.5px solid var(--border);background:transparent;font-size:12px;cursor:pointer;font-family:inherit;color:var(--sub);">×</button>
+    </div>
+  </div>
   <div class="balance-card">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
       <div style="flex:1;min-width:0;">
@@ -541,6 +550,18 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
       <span id="newMonthBtnFill" style="position:absolute;top:0;left:0;bottom:0;width:0%;background:rgba(255,255,255,.5);pointer-events:none;"></span>
       <span style="position:relative;">長押しで新しい月を開始</span>
     </button>
+
+    <!-- 長押し後に表示される開始日確認フォーム -->
+    <div id="newMonthForm" style="display:none;background:var(--bg);border-radius:var(--radius-s);padding:12px;margin-top:10px;">
+      <div style="font-size:11px;color:var(--sub);margin-bottom:8px;line-height:1.6;">
+        開始日を確認してください。今日以外の日から始める場合や、あとで気づいた場合はここで変更できます。
+      </div>
+      <input class="field-input" id="newMonthDateInput" type="date" style="width:100%;padding:8px 10px;font-size:14px;margin-bottom:10px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <button onclick="closeNewMonthForm()" style="padding:10px;border-radius:8px;border:0.5px solid var(--border);background:transparent;font-size:13px;cursor:pointer;font-family:inherit;color:var(--sub);">キャンセル</button>
+        <button onclick="confirmStartNewMonth()" style="padding:10px;border-radius:8px;border:none;background:var(--amber);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">この日付で開始</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -675,7 +696,7 @@ const BUDGET = {
 // ============================================================
 // バージョン情報
 // ============================================================
-const APP_VERSION = "2.0.13"; // ← 更新するたびに番号を上げる
+const APP_VERSION = "2.0.14"; // ← 更新するたびに番号を上げる
 
 // ============================================================
 // ストレージ
@@ -793,6 +814,34 @@ function localDateStr(d = new Date()) {
 
 function fmt(n) { return "¥" + n.toLocaleString("ja-JP"); }
 
+// 進行中の月度の開始日を後から修正する（最新月度のみ許可）
+function openEditPeriodStart() {
+  const periods = ensurePeriods();
+  if (!periods.length || viewPeriodIndex !== periods.length - 1) return;
+  document.getElementById("editPeriodStartInput").value = periods[viewPeriodIndex].start_date;
+  document.getElementById("editPeriodStartForm").style.display = "block";
+}
+function closeEditPeriodStart() {
+  const form = document.getElementById("editPeriodStartForm");
+  if (form) form.style.display = "none";
+}
+function saveEditPeriodStart() {
+  const newDate = document.getElementById("editPeriodStartInput").value;
+  if (!newDate) { showToast("日付を選択してください"); return; }
+  const periods = ensurePeriods();
+  const idx = periods.length - 1;
+  if (idx > 0 && newDate <= periods[idx - 1].start_date) {
+    showToast("前の月度の開始日より後の日付にしてください");
+    return;
+  }
+  periods[idx].start_date = newDate;
+  savePeriods(periods);
+  closeEditPeriodStart();
+  renderHome();
+  renderGraph();
+  showToast("開始日を変更しました");
+}
+
 // ============================================================
 // ホーム描画
 // ============================================================
@@ -801,6 +850,8 @@ function renderHome() {
 
   // 月度が1件も無い（サービス未開始）場合は空状態を表示する
   if (!periods.length) {
+    document.getElementById("editPeriodStartBtn").style.display = "none";
+    closeEditPeriodStart();
     document.getElementById("monthTitle").textContent = "未開始";
     document.getElementById("balanceAmount").textContent = fmt(0);
     document.getElementById("totalIncome").textContent   = fmt(0);
@@ -827,6 +878,9 @@ function renderHome() {
   const balance = income - expense;
 
   document.getElementById("monthTitle").textContent = periodLabel(viewPeriodIndex);
+  const isLatestPeriodForEdit = viewPeriodIndex === periods.length - 1;
+  document.getElementById("editPeriodStartBtn").style.display = isLatestPeriodForEdit ? "inline-block" : "none";
+  if (!isLatestPeriodForEdit) closeEditPeriodStart();
   document.getElementById("balanceAmount").textContent = fmt(balance);
   document.getElementById("totalIncome").textContent   = fmt(income);
   document.getElementById("totalExpense").textContent  = fmt(expense);
@@ -2135,7 +2189,7 @@ function startHoldNewMonth() {
   }, 30);
   holdTimer = setTimeout(() => {
     cancelHoldNewMonth();
-    startNewMonth();
+    openNewMonthForm();
   }, HOLD_DURATION);
 }
 
@@ -2184,16 +2238,31 @@ function cancelHoldReceipt() {
 //   「月初確保」の支出として自動的に計上した上で、月度を切り替える。
 let newMonthFlowStep = null; // null | "income" | "savings" | "fixedcosts"
 
-function startNewMonth() {
+// 長押し完了後に開始日確認フォームを開く
+function openNewMonthForm() {
+  document.getElementById("newMonthDateInput").value = localDateStr();
+  document.getElementById("newMonthForm").style.display = "block";
+}
+function closeNewMonthForm() {
+  document.getElementById("newMonthForm").style.display = "none";
+}
+// フォームの「この日付で開始」ボタンから呼ばれる
+function confirmStartNewMonth() {
+  const dateVal = document.getElementById("newMonthDateInput").value;
+  if (!dateVal) { showToast("開始日を選択してください"); return; }
+  const periods = ensurePeriods();
+  if (periods.length && dateVal <= periods[periods.length - 1].start_date) {
+    showToast("前の月度の開始日より後の日付にしてください");
+    return;
+  }
+  closeNewMonthForm();
+  startNewMonth(dateVal);
+}
+
+function startNewMonth(startDate) {
   const periods = ensurePeriods();
   const isFirstTime = periods.length === 0;
-
-  const confirmMsg = isFirstTime
-    ? "家計簿をこの日から開始します。まず収入（給与など）の入力から始めましょう。よろしいですか？"
-    : "新しい月度を開始します。まず収入（給与など）を入力してください。よろしいですか？";
-  if (!confirm(confirmMsg)) return;
-
-  const today = localDateStr();
+  const today = startDate || localDateStr();
 
   if (!isFirstTime) {
     const txs = loadTx();
