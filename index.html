@@ -628,7 +628,7 @@ const BUDGET = {
 // ============================================================
 // バージョン情報
 // ============================================================
-const APP_VERSION = "2.0.15"; // ← 更新するたびに番号を上げる
+const APP_VERSION = "2.0.16"; // ← 更新するたびに番号を上げる
 
 // ============================================================
 // ストレージ
@@ -745,6 +745,15 @@ function localDateStr(d = new Date()) {
 }
 
 function fmt(n) { return "¥" + n.toLocaleString("ja-JP"); }
+
+// ユーザー入力（メモ・名前など）をHTMLとして描画する前に無害化する。
+// レシートOCRの読み取り結果やURL連携で受け取った文字列など、
+// 自分で書いたのではないテキストが混入するケースに備えるための処理。
+function escapeHtml(str) {
+  return String(str ?? "").replace(/[&<>"']/g, ch => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[ch]));
+}
 
 // 2つの日付（YYYY-MM-DD）の間の日数を返す
 function daysBetween(a, b) {
@@ -892,7 +901,7 @@ function renderHome() {
         return `<div class="tx-item">
           <div class="tx-icon" style="background:${bg}">${c.emoji}</div>
           <div class="tx-info">
-            <div class="tx-name">${t.memo || c.label}</div>
+            <div class="tx-name">${escapeHtml(t.memo) || c.label}</div>
             <div class="tx-date">${d.getMonth()+1}/${d.getDate()}  ${c.label}</div>
           </div>
           <div class="tx-amount ${t.type}">${t.type==="income"?"+":"-"}${fmt(t.amount)}</div>
@@ -1332,9 +1341,9 @@ async function handleReceipt(input) {
 
 function showOcrResult(d) {
   document.getElementById("ocrItems").innerHTML =
-    d.items.map(i => `<div class="ocr-item"><span>${i.name}</span><span>${fmt(i.price)}</span></div>`).join("");
+    d.items.map(i => `<div class="ocr-item"><span>${escapeHtml(i.name)}</span><span>${fmt(i.price)}</span></div>`).join("");
   document.getElementById("ocrTotal").innerHTML =
-    `<span>合計（${d.store}）</span><span>${fmt(d.total)}</span>`;
+    `<span>合計（${escapeHtml(d.store)}）</span><span>${fmt(d.total)}</span>`;
   document.getElementById("ocrResult").classList.add("show");
 }
 
@@ -1584,7 +1593,7 @@ function renderSavings() {
   if (alerts.length > 0) {
     alertEl.style.display = "block";
     alertEl.innerHTML = "⚠️ " + alerts.map(p =>
-      `「${p.name}」まで${calcRemainingMonths(p.targetYear, p.targetMonth)}ヶ月。月々¥${p.monthly?.toLocaleString()}の積立が必要です。`
+      `「${escapeHtml(p.name)}」まで${calcRemainingMonths(p.targetYear, p.targetMonth)}ヶ月。月々¥${p.monthly?.toLocaleString()}の積立が必要です。`
     ).join("<br>");
   } else {
     alertEl.style.display = "none";
@@ -1608,7 +1617,7 @@ function renderSavings() {
       <div style="display:flex;align-items:center;gap:8px;">
         <div style="width:30px;height:30px;border-radius:8px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">${cat.emoji}</div>
         <div style="flex:1;">
-          <div style="font-size:13px;font-weight:600;color:var(--text);">${p.name}</div>
+          <div style="font-size:13px;font-weight:600;color:var(--text);">${escapeHtml(p.name)}</div>
           <div style="font-size:10px;color:var(--muted);">${p.targetYear}年${p.targetMonth}月 / ${statusTxt}</div>
         </div>
         <div style="text-align:right;">
@@ -1785,7 +1794,7 @@ function updateDebugPanel() {
       const stored  = p.monthly || 0;
       const match   = monthly === stored ? "✅" : "⚠️ 不一致";
       return `<div style="padding:3px 0;border-bottom:0.5px solid var(--border);">
-        <b>${p.name}</b><br>
+        <b>${escapeHtml(p.name)}</b><br>
         残り${months}ヶ月 / 不足額${fmt(remaining)} / 月々${fmt(monthly)} ${match}
         ${monthly !== stored ? `（保存値: ${fmt(stored)}）` : ""}
       </div>`;
@@ -1800,7 +1809,7 @@ function updateDebugPanel() {
   });
   document.getElementById("debugAlert").innerHTML = warnPlans.length === 0
     ? '<div style="color:var(--green);">✅ 警告なし</div>'
-    : warnPlans.map(p => `<div style="color:var(--red);">⚠️ ${p.name}（残り${calcRemainingMonths(p.targetYear,p.targetMonth)}ヶ月）</div>`).join("");
+    : warnPlans.map(p => `<div style="color:var(--red);">⚠️ ${escapeHtml(p.name)}（残り${calcRemainingMonths(p.targetYear,p.targetMonth)}ヶ月）</div>`).join("");
 
   // RAWデータ
   document.getElementById("debugRaw").textContent =
@@ -1906,7 +1915,7 @@ function renderFixedCostList(cycle) {
     return `<div class="tx-item" style="cursor:pointer;" onclick="openFixedCostForm('${item.id}')">
       <div class="tx-icon" style="background:var(--bg);">${cat.emoji}</div>
       <div class="tx-info">
-        <div class="tx-name">${item.item}</div>
+        <div class="tx-name">${escapeHtml(item.item)}</div>
         <div class="tx-date">${item.due_day ? `毎月${item.due_day}日` : "支払日未定"}</div>
       </div>
       <div style="text-align:right;">
