@@ -460,67 +460,6 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
   </div>
 </div>
 
-<!-- ===== 資金繰り ===== -->
-<div class="page" id="page-cashflow">
-  <div class="section-title" style="margin-top:4px">資金繰り評価</div>
-
-  <!-- 現在の総残高 -->
-  <div class="budget-card" style="margin-bottom:8px;">
-    <div class="budget-row">
-      <span class="budget-label">現在の総残高（口座＋手持ち）</span>
-    </div>
-    <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">
-      <input class="field-input" id="cfBalanceInput" type="number" inputmode="numeric" placeholder="例: 45000" style="flex:1;padding:8px 10px;font-size:15px;">
-      <button onclick="setAvailableBalance()" style="padding:8px 12px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">補正</button>
-    </div>
-    <div style="font-size:11px;color:var(--muted);line-height:1.6;">
-      取引の記録に応じて自動的に増減します。実際の残高とズレたら、ここで補正してください。
-    </div>
-  </div>
-
-  <!-- 次回収入日 -->
-  <div class="budget-card" style="margin-bottom:8px;">
-    <div class="budget-row">
-      <span class="budget-label">次回収入予定日</span>
-      <span class="budget-nums" id="cfDaysRemaining"></span>
-    </div>
-    <input class="field-input" id="cfNextIncomeInput" type="date" style="width:100%;padding:8px 10px;font-size:14px;" onchange="updateNextIncomeDate(this.value)">
-  </div>
-
-  <!-- 評価結果 -->
-  <div class="balance-card" id="cfEvalCard" style="margin-bottom:8px;">
-    <div class="balance-label">次の収入日まで、資金は持つか</div>
-    <div class="balance-amount" id="cfEvalResult" style="font-size:22px;">-</div>
-    <div class="balance-sub" style="margin-top:8px;">
-      <div class="balance-sub-item">残り固定費<span id="cfFixedRemain">¥0</span></div>
-      <div class="balance-sub-item">生活費ペース<span id="cfDailyAvg">¥0</span></div>
-    </div>
-  </div>
-
-  <button onclick="showPage('fixedcosts')" style="width:100%;padding:10px;border-radius:var(--radius-s);border:0.5px solid var(--border);background:var(--card);color:var(--sub);font-size:12px;cursor:pointer;font-family:inherit;margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:6px;">
-    📋 固定費の内容を確認・編集する
-  </button>
-
-  <!-- お金の動きイベント取込 -->
-  <div class="section-title">お金の動きイベントを取り込む</div>
-  <div class="receipt-area" style="margin-bottom:10px;text-align:left;padding:14px;">
-    <div style="font-size:12px;color:var(--sub);margin-bottom:8px;">Shortcutsが書き出したiCloud Drive上のイベントファイル(inbox内のjson)を選択してください。複数選択可。</div>
-    <label class="export-btn" style="cursor:pointer;display:inline-flex;">
-      📥 イベントファイルを選択
-      <input type="file" id="cfEventFileInput" accept="application/json" multiple style="display:none;" onchange="handleEventFiles(event)">
-    </label>
-  </div>
-  <div id="cfConfirmQueue"></div>
-
-  <!-- iCloud Drive書き出し -->
-  <div class="export-section" style="margin-top:14px;">
-    <div class="export-title">☁️ iCloud Drive用ファイルを書き出す</div>
-    <button class="export-btn" onclick="exportStateJson()">state.json を保存</button>
-    <button class="export-btn" style="margin-top:6px;" onclick="exportCycleJson()">cycle_current.json を保存</button>
-    <div class="export-note">保存後、共有シートから「ファイル」→ iCloud Drive/Scriptable/家計簿/ を選んで保存してください。</div>
-  </div>
-</div>
-
 <!-- ===== ユーティリティ ===== -->
 <div class="page" id="page-utility">
   <div class="section-title" style="margin-top:4px">データのバックアップ</div>
@@ -608,7 +547,7 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
   </div>
 
   <div style="font-size:11px;color:var(--muted);line-height:1.7;padding:4px 2px;">
-    ここで登録した固定費は、「資金繰り」ページの評価に自動的に反映されます。
+    ここで登録した固定費は、「新しい月を開始」の際に月初確保の支出として自動的に計上されます。
   </div>
 </div>
 
@@ -641,10 +580,6 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
   <button class="nav-btn" id="nav-fixedcosts" onclick="showPage('fixedcosts')">
     <svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg>
     固定
-  </button>
-  <button class="nav-btn" id="nav-cashflow" onclick="showPage('cashflow')">
-    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="14" x2="12" y2="14"/></svg>
-    資金繰り
   </button>
   <button class="nav-btn" id="nav-utility" onclick="showPage('utility')">
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
@@ -685,9 +620,6 @@ const BUDGET_CATS = {
   comm:8000, housing:95000, medical:5000, social:27000, savings:18000, other:22000
 };
 
-// 資金繰り評価（日次の生活費ペース算出）で除外するカテゴリ。
-// 固定費（住居・通信）や貯蓄は「普段の生活費」ではなく別枠で管理するため対象外とする。
-const FIXED_LIKE_CATS = ["savings", "housing", "comm"];
 const BUDGET = {
   ...BUDGET_CATS,
   total: Object.values(BUDGET_CATS).reduce((s,v)=>s+v, 0)
@@ -696,7 +628,7 @@ const BUDGET = {
 // ============================================================
 // バージョン情報
 // ============================================================
-const APP_VERSION = "2.0.14"; // ← 更新するたびに番号を上げる
+const APP_VERSION = "2.0.15"; // ← 更新するたびに番号を上げる
 
 // ============================================================
 // ストレージ
@@ -813,6 +745,12 @@ function localDateStr(d = new Date()) {
 }
 
 function fmt(n) { return "¥" + n.toLocaleString("ja-JP"); }
+
+// 2つの日付（YYYY-MM-DD）の間の日数を返す
+function daysBetween(a, b) {
+  const MS = 24 * 60 * 60 * 1000;
+  return Math.round((new Date(b) - new Date(a)) / MS);
+}
 
 // 進行中の月度の開始日を後から修正する（最新月度のみ許可）
 function openEditPeriodStart() {
@@ -1090,7 +1028,6 @@ function submitTx() {
     date: document.getElementById("dateInput").value || localDateStr(),
   });
   saveTx(txs);
-  adjustBalance(inputType === "expense" ? -amt : amt);
 
   inputAmt = "";
   document.getElementById("amountDisplay").textContent = "¥0";
@@ -1413,7 +1350,6 @@ function registerFromOcr() {
     date: ocrData.date || new Date().toISOString().slice(0,10),
   });
   saveTx(txs);
-  adjustBalance(-ocrData.total);
   document.getElementById("ocrResult").classList.remove("show");
   showToast("レシートを記録しました");
   renderHome();
@@ -1432,7 +1368,7 @@ function fileToBase64(file) {
 // ページ切替
 // ============================================================
 function showPage(name) {
-  ["home","input","graph","savings","fixedcosts","cashflow","utility"].forEach(p => {
+  ["home","input","graph","savings","fixedcosts","utility"].forEach(p => {
     document.getElementById(`page-${p}`).classList.toggle("active", p===name);
     document.getElementById(`nav-${p}`).classList.toggle("active", p===name);
   });
@@ -1440,7 +1376,6 @@ function showPage(name) {
   if (name==="graph")      renderGraph();
   if (name==="savings")    { renderSavings(); toggleFlowBanner("flowNextToFixed", newMonthFlowStep === "savings"); }
   if (name==="fixedcosts") { renderFixedCostsPage(); toggleFlowBanner("flowFinish", newMonthFlowStep === "fixedcosts"); }
-  if (name==="cashflow")   renderCashflow();
 }
 
 function toggleFlowBanner(id, show) {
@@ -1907,25 +1842,14 @@ function debugClearAll() {
 }
 
 // ============================================================
-// 資金繰り機能（総残高 / サイクル・固定費 / お金の動きイベント）
+// 固定費機能（サイクル・固定費項目の管理）
 // ============================================================
 
 // ---- ストレージ ----
-function loadState() {
-  try { return JSON.parse(localStorage.getItem("kakeibo_state") || "null") || { available_balance: 0, balance_updated_at: null }; }
-  catch { return { available_balance: 0, balance_updated_at: null }; }
-}
-function saveState(s) { localStorage.setItem("kakeibo_state", JSON.stringify(s)); }
-
 function loadCycle() {
   try { return JSON.parse(localStorage.getItem("kakeibo_cycle") || "null"); } catch { return null; }
 }
 function saveCycle(c) { localStorage.setItem("kakeibo_cycle", JSON.stringify(c)); }
-
-function loadProcessedEvents() {
-  try { return JSON.parse(localStorage.getItem("kakeibo_processed_events") || "[]"); } catch { return []; }
-}
-function saveProcessedEvents(arr) { localStorage.setItem("kakeibo_processed_events", JSON.stringify(arr)); }
 
 // 固定費カテゴリ（水道光熱費・クレカ返済・ローン等、よくある項目の目印）
 const FIXED_COST_CATS = [
@@ -1946,8 +1870,7 @@ const FIXED_COST_CATS = [
 function ensureCycle() {
   let c = loadCycle();
   if (!c) {
-    const today = localDateStr();
-    c = { cycle_id: null, created_by: null, created_at: null, next_income_date: today, fixed_costs: [] };
+    c = { cycle_id: null, created_by: null, created_at: null, fixed_costs: [] };
   }
   let changed = !c.fixed_costs;
   c.fixed_costs = (c.fixed_costs || []).map(item => {
@@ -1957,90 +1880,6 @@ function ensureCycle() {
   });
   if (changed) saveCycle(c);
   return c;
-}
-
-// ---- 総残高の増減 ----
-function adjustBalance(delta) {
-  const s = loadState();
-  s.available_balance = (s.available_balance || 0) + delta;
-  s.balance_updated_at = new Date().toISOString();
-  saveState(s);
-}
-
-function setAvailableBalance() {
-  const v = parseInt(document.getElementById("cfBalanceInput").value || "0", 10);
-  if (isNaN(v)) { showToast("金額を入力してください"); return; }
-  const s = loadState();
-  s.available_balance = v;
-  s.balance_updated_at = new Date().toISOString();
-  saveState(s);
-  showToast("残高を補正しました");
-  renderCashflow();
-}
-
-// ---- 生活費ペースの算出（積立・固定費カテゴリを除く） ----
-function calcVariableCostTrend(days = 90) {
-  const since = new Date();
-  since.setDate(since.getDate() - days);
-  const txs = loadTx().filter(t => t.type === "expense"
-    && !FIXED_LIKE_CATS.includes(t.cat)
-    && !(t.source && t.source.startsWith("cycle_"))
-    && new Date(t.date) >= since);
-  const total = txs.reduce((s, t) => s + t.amount, 0);
-  return { avg_per_day: Math.round(total / days), based_on_period_days: days };
-}
-
-function daysBetween(a, b) {
-  const MS = 24 * 60 * 60 * 1000;
-  return Math.round((new Date(b) - new Date(a)) / MS);
-}
-
-// 今日から次回収入日までに支払日が来る固定費の合算
-function calcRemainingFixedCosts(cycle) {
-  if (!cycle) return 0;
-  const today = new Date();
-  const nextIncome = new Date(cycle.next_income_date);
-  return cycle.fixed_costs.reduce((sum, item) => {
-    if (item.due_day == null) return sum;
-    let due = new Date(today.getFullYear(), today.getMonth(), item.due_day);
-    if (due < today) due = new Date(today.getFullYear(), today.getMonth() + 1, item.due_day);
-    if (due >= today && due <= nextIncome) return sum + (item.amount || 0);
-    return sum;
-  }, 0);
-}
-
-// ---- 描画 ----
-function renderCashflow() {
-  const state = loadState();
-  const cycle = ensureCycle();
-
-  document.getElementById("cfBalanceInput").value = state.available_balance || 0;
-  document.getElementById("cfNextIncomeInput").value = cycle.next_income_date || "";
-
-  const days = Math.max(daysBetween(localDateStr(), cycle.next_income_date), 0);
-  document.getElementById("cfDaysRemaining").textContent = `残り${days}日`;
-
-  const trend = calcVariableCostTrend();
-  const fixedRemain = calcRemainingFixedCosts(cycle);
-  const variableNeed = Math.round(trend.avg_per_day * days);
-  const needed = fixedRemain + variableNeed;
-  const diff = (state.available_balance || 0) - needed;
-
-  document.getElementById("cfFixedRemain").textContent = fmt(fixedRemain);
-  document.getElementById("cfDailyAvg").textContent = fmt(trend.avg_per_day) + "/日";
-
-  const evalCard = document.getElementById("cfEvalCard");
-  const evalResult = document.getElementById("cfEvalResult");
-  if (diff >= 0) {
-    evalCard.style.background = "var(--green)";
-    evalResult.textContent = `持ちます（余裕 ${fmt(diff)}）`;
-  } else {
-    evalCard.style.background = "var(--red)";
-    evalResult.textContent = `不足の可能性（${fmt(Math.abs(diff))}不足）`;
-  }
-
-  renderFixedCostList(cycle);
-  renderConfirmQueue();
 }
 
 // 固定費ページの描画
@@ -2077,15 +1916,6 @@ function renderFixedCostList(cycle) {
       <button onclick="event.stopPropagation();deleteFixedCostItem('${item.id}')" style="background:none;border:none;color:var(--muted);font-size:15px;padding:0 2px 0 8px;cursor:pointer;line-height:1;">✕</button>
     </div>`;
   }).join("");
-}
-
-// 次回収入日の手動編集（サイクル作成を待たずに随時修正可）
-function updateNextIncomeDate(value) {
-  if (!value) return;
-  const cycle = ensureCycle();
-  cycle.next_income_date = value;
-  saveCycle(cycle);
-  renderCashflow();
 }
 
 // ---- 固定費の登録・編集フォーム ----
@@ -2158,7 +1988,7 @@ function saveFixedCostItem() {
 
   saveCycle(cycle);
   closeFixedCostForm();
-  renderCashflow();
+  renderFixedCostsPage();
   renderHome();
   showToast(amount === 0 ? `「${name}」を仮登録しました（金額は後で入力できます）` : `「${name}」を保存しました`);
 }
@@ -2168,7 +1998,7 @@ function deleteFixedCostItem(id) {
   const cycle = ensureCycle();
   cycle.fixed_costs = cycle.fixed_costs.filter(i => i.id !== id);
   saveCycle(cycle);
-  renderCashflow();
+  renderFixedCostsPage();
   renderHome();
   showToast("削除しました");
 }
@@ -2324,137 +2154,6 @@ function finishNewMonthFlow() {
   showToast("新しい月度の準備が完了しました");
 }
 
-// ---- お金の動きイベント（Shortcutsが書き出したinboxファイルの取り込み） ----
-let pendingMovementConfirms = [];
-
-
-function handleEventFiles(e) {
-  const files = Array.from(e.target.files || []);
-  if (!files.length) return;
-  const processed = loadProcessedEvents();
-  let readCount = 0;
-
-  files.forEach(file => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      readCount++;
-      try {
-        const ev = JSON.parse(reader.result);
-        if (!ev.event_id || processed.includes(ev.event_id)) return;
-
-        if (ev.judged_by === "ai") {
-          applyMovementEvent(ev, true);
-          processed.push(ev.event_id);
-          saveProcessedEvents(processed);
-        } else {
-          pendingMovementConfirms.push(ev);
-        }
-      } catch (err) {
-        console.warn("イベントファイル読み込みエラー:", err.message);
-      } finally {
-        if (readCount === files.length) {
-          renderCashflow();
-          showToast(pendingMovementConfirms.length
-            ? `${pendingMovementConfirms.length}件、確認が必要です`
-            : "イベントを取り込みました");
-        }
-      }
-    };
-    reader.readAsText(file);
-  });
-  e.target.value = "";
-}
-
-function applyMovementEvent(ev, deduct) {
-  const mm = ev.money_movement;
-  if (deduct) {
-    const txs = loadTx();
-    txs.push({
-      id: Date.now() + Math.random(),
-      type: "expense",
-      cat: mm.suggested_category || "other",
-      amount: mm.amount,
-      memo: mm.store_or_payee || "",
-      date: mm.date || new Date().toISOString().slice(0, 10)
-    });
-    saveTx(txs);
-    adjustBalance(-mm.amount);
-  }
-  // deduct=false（口座間移動など）は残高・取引に影響を与えない
-}
-
-function renderConfirmQueue() {
-  const el = document.getElementById("cfConfirmQueue");
-  if (!pendingMovementConfirms.length) { el.innerHTML = ""; return; }
-  el.innerHTML = pendingMovementConfirms.map((ev, i) => {
-    const mm = ev.money_movement;
-    return `<div class="tx-list" style="margin-top:8px;padding:10px 12px;">
-      <div style="font-size:12px;color:var(--text);margin-bottom:6px;">
-        ${mm.store_or_payee || "(不明)"}　${fmt(mm.amount)}（${mm.date}）
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
-        <button onclick="confirmMovement(${i}, true)" style="padding:8px;border-radius:8px;border:none;background:var(--red-l);color:var(--red);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">減算する</button>
-        <button onclick="confirmMovement(${i}, false)" style="padding:8px;border-radius:8px;border:none;background:var(--blue-l);color:var(--blue);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">影響なし扱い</button>
-      </div>
-    </div>`;
-  }).join("");
-}
-
-function confirmMovement(index, deduct) {
-  const ev = pendingMovementConfirms[index];
-  applyMovementEvent(ev, deduct);
-  const processed = loadProcessedEvents();
-  processed.push(ev.event_id);
-  saveProcessedEvents(processed);
-  pendingMovementConfirms.splice(index, 1);
-  renderCashflow();
-  showToast("反映しました");
-}
-
-// ---- iCloud Drive用エクスポート ----
-function downloadJson(obj, filename) {
-  const blob = new Blob([JSON.stringify(obj, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url; a.download = filename; a.click();
-  URL.revokeObjectURL(url);
-}
-
-function exportStateJson() {
-  const state = loadState();
-  const trend = calcVariableCostTrend();
-  const plans = loadSavingsPlans();
-  const savingsTotal = plans.reduce((s, p) => s + (p.monthly || 0), 0);
-  const savingsBalance = plans.reduce((s, p) => s + (p.balance || 0), 0);
-  const cycle = ensureCycle();
-  const days = Math.max(daysBetween(localDateStr(), cycle.next_income_date), 0);
-
-  downloadJson({
-    updated_at: new Date().toISOString(),
-    current_status: {
-      available_balance: state.available_balance || 0,
-      next_income_date: cycle.next_income_date,
-      days_remaining: days
-    },
-    variable_cost_trend: {
-      avg_per_day: trend.avg_per_day,
-      based_on_period_days: trend.based_on_period_days,
-      volatility: "unknown",
-      excludes: FIXED_LIKE_CATS
-    },
-    savings_summary: {
-      monthly_total: savingsTotal,
-      balance_total: savingsBalance
-    }
-  }, "state.json");
-  showToast("state.json を書き出しました");
-}
-
-function exportCycleJson() {
-  downloadJson(ensureCycle(), "cycle_current.json");
-  showToast("cycle_current.json を書き出しました");
-}
-
 // ============================================================
 // URL連携（Shortcuts + ChatGPT からのレシートデータ受信）
 // ============================================================
@@ -2496,7 +2195,6 @@ function receiveFromUrl() {
     date
   });
   saveTx(txs);
-  adjustBalance(-amount);
 
   if (ensurePeriods().length) viewPeriodIndex = findPeriodIndexForDate(date);
 
