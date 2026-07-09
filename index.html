@@ -628,7 +628,7 @@ const BUDGET = {
 // ============================================================
 // バージョン情報
 // ============================================================
-const APP_VERSION = "2.0.16"; // ← 更新するたびに番号を上げる
+const APP_VERSION = "2.0.17"; // ← 更新するたびに番号を上げる
 
 // ============================================================
 // ストレージ
@@ -821,7 +821,19 @@ function renderHome() {
 
   const txs = periodTxs(viewPeriodIndex);
   const income  = txs.filter(t=>t.type==="income").reduce((s,t)=>s+t.amount,0);
-  const expense = txs.filter(t=>t.type==="expense").reduce((s,t)=>s+t.amount,0);
+  const expenseActual = txs.filter(t=>t.type==="expense").reduce((s,t)=>s+t.amount,0);
+
+  // 積立合計・固定合計（今月度分として確保すべき金額）
+  const savingsTotal = loadSavingsPlans().reduce((s,p)=>s+(p.monthly||0),0);
+  const fixedTotal = ensureCycle().fixed_costs.reduce((s,i)=>s+(i.amount||0),0);
+
+  // 「新しい月を開始」の2回目以降は、積立・固定費が「月初確保」の支出として
+  // 既にtxsへ自動計上されている（source: cycle_savings / cycle_fixed_cost）。
+  // その場合はexpenseActualに含まれているため、ここで上乗せすると二重計上になる。
+  // まだ月初確保が記録されていない月度（初回の月度など）でのみ、予定額として上乗せする。
+  const hasReserved = txs.some(t => t.source === "cycle_savings" || t.source === "cycle_fixed_cost");
+  const reserveAddition = hasReserved ? 0 : (savingsTotal + fixedTotal);
+  const expense = expenseActual + reserveAddition;
   const balance = income - expense;
 
   document.getElementById("monthTitle").textContent = periodLabel(viewPeriodIndex);
@@ -832,9 +844,7 @@ function renderHome() {
   document.getElementById("totalIncome").textContent   = fmt(income);
   document.getElementById("totalExpense").textContent  = fmt(expense);
 
-  // 積立合計・固定合計（残高カード右側）
-  const savingsTotal = loadSavingsPlans().reduce((s,p)=>s+(p.monthly||0),0);
-  const fixedTotal = ensureCycle().fixed_costs.reduce((s,i)=>s+(i.amount||0),0);
+  // 積立合計・固定合計（残高カード右側の参考表示）
   document.getElementById("homeSavingsTotal").textContent = fmt(savingsTotal);
   document.getElementById("homeFixedTotal").textContent   = fmt(fixedTotal);
 
