@@ -239,6 +239,40 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
   <div class="section-title">今月度の取引</div>
   <div class="tx-list" id="txList"></div>
 
+  <!-- 取引 編集・削除フォーム（一覧の項目をタップすると表示） -->
+  <div id="txEditForm" style="display:none;background:var(--card);border-radius:var(--radius);padding:14px;box-shadow:0 1px 8px rgba(0,0,0,.05);margin-top:10px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div style="font-size:14px;font-weight:600;color:var(--text);">取引を編集</div>
+      <button onclick="closeTxEditForm()" style="background:none;border:none;color:var(--muted);font-size:20px;line-height:1;cursor:pointer;padding:0 0 0 10px;">×</button>
+    </div>
+
+    <div class="type-toggle" style="margin-bottom:10px;">
+      <button class="type-btn" id="txEditTypeExpense" onclick="setTxEditType('expense')">支出</button>
+      <button class="type-btn" id="txEditTypeIncome" onclick="setTxEditType('income')">収入</button>
+    </div>
+
+    <div style="margin-bottom:8px;">
+      <input class="field-input" id="txEditAmount" type="number" inputmode="numeric" placeholder="金額（円）" style="width:100%;padding:8px 10px;font-size:15px;">
+    </div>
+
+    <div style="margin-bottom:8px;">
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;" id="txEditCatGrid"></div>
+    </div>
+
+    <div style="margin-bottom:8px;">
+      <input class="field-input" id="txEditDate" type="date" style="width:100%;padding:8px 10px;font-size:14px;">
+    </div>
+
+    <div style="margin-bottom:10px;">
+      <textarea class="field-input" id="txEditMemo" placeholder="メモ（任意）" style="width:100%;padding:8px 10px;font-size:13px;resize:none;height:44px;"></textarea>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <button onclick="deleteTxEdit()" style="padding:10px;border-radius:8px;border:0.5px solid var(--red);background:var(--red-l);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--red);">削除</button>
+      <button onclick="saveTxEdit()" style="padding:10px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">更新</button>
+    </div>
+  </div>
+
   <!-- レシート記録（長押しで起動・最下段） -->
   <button id="receiptBtn"
           style="position:relative;overflow:hidden;display:block;width:100%;padding:12px;border-radius:var(--radius-s);border:none;background:var(--amber);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;box-sizing:border-box;margin-top:10px;-webkit-user-select:none;user-select:none;touch-action:manipulation;"
@@ -663,7 +697,7 @@ const BUDGET = {
 // ============================================================
 // バージョン情報
 // ============================================================
-const APP_VERSION = "2.0.24"; // ← 更新するたびに番号を上げる
+const APP_VERSION = "2.1.0"; // ← 更新するたびに番号を上げる
 
 // ============================================================
 // ストレージ
@@ -828,6 +862,7 @@ function saveEditPeriodStart() {
 // ホーム描画
 // ============================================================
 function renderHome() {
+  closeTxEditForm(); // 月度切替などでの再描画時、開いていた編集フォームは一旦閉じる
   const periods = ensurePeriods();
 
   // 月度が1件も無い（サービス未開始）場合は空状態を表示する
@@ -943,7 +978,7 @@ function renderHome() {
         const c = allCats.find(c=>c.id===t.cat) || {emoji:"📦",label:"その他"};
         const bg = t.type==="income" ? "var(--green-l)" : "var(--red-l)";
         const d  = new Date(t.date);
-        return `<div class="tx-item">
+        return `<div class="tx-item" style="cursor:pointer;" onclick="openTxEditForm(${t.id})">
           <div class="tx-icon" style="background:${bg}">${c.emoji}</div>
           <div class="tx-info">
             <div class="tx-name">${escapeHtml(t.memo) || c.label}</div>
@@ -1095,6 +1130,103 @@ function submitTx() {
     showPage("savings");
     showToast("収入を記録しました。続けて積立プランを確認してください");
   }
+}
+
+// ============================================================
+// 取引の編集・削除（ホーム画面の一覧から項目をタップして開く）
+// ============================================================
+let editingTxId = null;
+let txEditType = "expense";
+let txEditSelectedCat = "";
+
+function openTxEditForm(id) {
+  const t = loadTx().find(x => x.id === id);
+  if (!t) return;
+
+  editingTxId = id;
+  txEditType = t.type;
+  txEditSelectedCat = t.cat;
+
+  document.getElementById("txEditAmount").value = t.amount;
+  document.getElementById("txEditDate").value = t.date;
+  document.getElementById("txEditMemo").value = t.memo || "";
+  updateTxEditTypeButtons();
+  renderTxEditCatGrid();
+
+  const form = document.getElementById("txEditForm");
+  form.style.display = "block";
+  form.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function closeTxEditForm() {
+  document.getElementById("txEditForm").style.display = "none";
+  editingTxId = null;
+}
+
+function setTxEditType(type) {
+  txEditType = type;
+  // 種別を切り替えた際、現在のカテゴリが新しい種別に存在しなければ先頭カテゴリに合わせる
+  const cats = type === "expense" ? CATS_EXPENSE : CATS_INCOME;
+  if (!cats.find(c => c.id === txEditSelectedCat)) txEditSelectedCat = cats[0].id;
+  updateTxEditTypeButtons();
+  renderTxEditCatGrid();
+}
+
+function updateTxEditTypeButtons() {
+  document.getElementById("txEditTypeExpense").className = "type-btn" + (txEditType==="expense" ? " active-expense" : "");
+  document.getElementById("txEditTypeIncome").className = "type-btn" + (txEditType==="income" ? " active-income" : "");
+}
+
+function renderTxEditCatGrid() {
+  const cats = txEditType === "expense" ? CATS_EXPENSE : CATS_INCOME;
+  document.getElementById("txEditCatGrid").innerHTML = cats.map(c =>
+    `<button type="button" class="cat-btn ${c.id===txEditSelectedCat?"selected":""}" onclick="selectTxEditCat('${c.id}')">
+      <span class="cat-emoji">${c.emoji}</span>${c.label}
+    </button>`
+  ).join("");
+}
+
+function selectTxEditCat(id) {
+  txEditSelectedCat = id;
+  renderTxEditCatGrid();
+}
+
+function saveTxEdit() {
+  if (!editingTxId) return;
+  const amount = parseInt(document.getElementById("txEditAmount").value || "0", 10);
+  if (!amount) { showToast("金額を入力してください"); return; }
+  const date = document.getElementById("txEditDate").value;
+  if (!date) { showToast("日付を選択してください"); return; }
+
+  const txs = loadTx();
+  const idx = txs.findIndex(t => t.id === editingTxId);
+  if (idx === -1) return;
+  txs[idx] = {
+    ...txs[idx],
+    type: txEditType,
+    cat: txEditSelectedCat,
+    amount,
+    date,
+    memo: document.getElementById("txEditMemo").value || "",
+  };
+  saveTx(txs);
+  closeTxEditForm();
+  renderHome();
+  showToast("取引を更新しました");
+}
+
+function deleteTxEdit() {
+  if (!editingTxId) return;
+  const txs = loadTx();
+  const t = txs.find(x => x.id === editingTxId);
+  const allCats = [...CATS_EXPENSE, ...CATS_INCOME];
+  const label = t ? (t.memo || (allCats.find(c => c.id === t.cat) || {}).label || "この取引") : "この取引";
+  if (!confirm(`「${label}」（${t ? fmt(t.amount) : ""}）を削除しますか？`)) return;
+
+  saveTx(txs.filter(x => x.id !== editingTxId));
+  closeTxEditForm();
+  renderHome();
+  showToast("削除しました");
 }
 
 // ============================================================
