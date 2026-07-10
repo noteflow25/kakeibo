@@ -86,6 +86,12 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
 .tx-amount.income{color:var(--green);}
 .tx-amount.expense{color:var(--red);}
 
+/* ===== 積立/固定費タブ 共通：追加ボタン・削除ボタン ===== */
+.add-item-btn{width:100%;padding:13px;border-radius:var(--radius-s);border:1.5px dashed var(--green);background:none;color:var(--green-d);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:10px;touch-action:manipulation;}
+.add-item-btn.blue{border-color:var(--blue);color:var(--blue);}
+.add-item-btn:active{opacity:.7;}
+.delete-x{background:none;border:none;color:var(--muted);font-size:16px;line-height:1;cursor:pointer;padding:8px 6px 8px 12px;touch-action:manipulation;}
+
 /* ===== 積立/固定費タブ：ヒーローカード方式（案A） ===== */
 .mini-bar-track{width:100%;height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:6px;}
 .mini-bar-fill{height:100%;border-radius:3px;transition:width .6s cubic-bezier(.22,1,.36,1);}
@@ -350,11 +356,11 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
   <!-- 警告エリア -->
   <div id="savingsAlert" style="display:none;background:var(--amber-l);border:0.5px solid var(--amber);border-radius:var(--radius);padding:10px 12px;margin-bottom:10px;font-size:12px;color:var(--amber);"></div>
 
-  <!-- 追加ボタン -->
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-    <span style="font-size:12px;font-weight:600;color:var(--sub);">積立プラン</span>
-    <button onclick="openSavingsForm()" style="font-size:12px;padding:4px 12px;border-radius:20px;border:0.5px solid var(--green);background:var(--green-l);color:var(--green-d);cursor:pointer;font-family:inherit;">＋ 追加</button>
-  </div>
+  <!-- プランリストの見出し -->
+  <div class="section-title" style="margin-top:4px;margin-bottom:2px;">積立プラン</div>
+
+  <!-- 追加ボタン（項目が増えても押しやすいようリストの上に配置） -->
+  <button onclick="openSavingsForm()" class="add-item-btn">＋ 積立プランを追加（車検費用・旅行費用など）</button>
 
   <!-- 積立プランリスト -->
   <div id="savingsList"></div>
@@ -543,11 +549,12 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
   </div>
 
   <!-- 固定費一覧 -->
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-    <span class="section-title" style="margin:0;">登録済みの固定費</span>
-  </div>
+  <div class="section-title" style="margin-top:4px;margin-bottom:2px;">登録済みの固定費</div>
+
+  <!-- 追加ボタン（項目が増えても押しやすいようリストの上に配置） -->
+  <button onclick="openFixedCostForm()" class="add-item-btn blue">＋ 固定費を追加（水道光熱費・ローン・お小遣いなど）</button>
+
   <div class="tx-list" id="cfFixedCostList" style="margin-bottom:8px;"></div>
-  <button onclick="openFixedCostForm()" style="width:100%;padding:10px;border-radius:var(--radius-s);border:1.5px dashed var(--border);background:none;color:var(--sub);font-size:12px;cursor:pointer;font-family:inherit;margin-bottom:10px;">＋ 固定費を追加（水道光熱費・ローン・お小遣いなど）</button>
 
   <!-- 固定費 登録・編集フォーム -->
   <div id="fixedCostForm" style="display:none;background:var(--card);border-radius:var(--radius);padding:14px;box-shadow:0 1px 8px rgba(0,0,0,.05);margin-bottom:14px;">
@@ -656,7 +663,7 @@ const BUDGET = {
 // ============================================================
 // バージョン情報
 // ============================================================
-const APP_VERSION = "2.0.22"; // ← 更新するたびに番号を上げる
+const APP_VERSION = "2.0.24"; // ← 更新するたびに番号を上げる
 
 // ============================================================
 // ストレージ
@@ -1646,7 +1653,7 @@ function renderSavings() {
   // プランリスト（各プランに達成率の進捗バーを表示）
   const listEl = document.getElementById("savingsList");
   if (plans.length === 0) {
-    listEl.innerHTML = `<div style="text-align:center;padding:30px;color:var(--muted);font-size:13px;">積立プランがありません<br>「＋ 追加」から作成してください</div>`;
+    listEl.innerHTML = `<div style="text-align:center;padding:30px;color:var(--muted);font-size:13px;">積立プランがありません<br>上の「＋ 積立プランを追加」から作成してください</div>`;
     return;
   }
 
@@ -1669,7 +1676,7 @@ function renderSavings() {
           <div class="goal-monthly">${fmt(p.monthly||0)}<span>/月</span></div>
           <div class="goal-status" style="${isWarn ? 'color:var(--amber);' : ''}">${statusTxt}</div>
         </div>
-        <button onclick="event.stopPropagation();deleteSavingsPlan('${p.id}')" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:0 0 0 8px;">×</button>
+        <button onclick="event.stopPropagation();deleteSavingsPlan('${p.id}')" class="delete-x">✕</button>
       </div>
       <div class="mini-bar-track"><div class="mini-bar-fill" style="width:${pct}%;background:${barColor};"></div></div>
     </div>`;
@@ -1987,7 +1994,7 @@ function renderFixedCostList(cycle) {
         <div class="tx-amount" style="color:var(--text);">${fmt(item.amount || 0)}</div>
         <div style="font-size:9px;color:${color};font-weight:600;">${label}</div>
       </div>
-      <button onclick="event.stopPropagation();deleteFixedCostItem('${item.id}')" style="background:none;border:none;color:var(--muted);font-size:15px;padding:0 2px 0 8px;cursor:pointer;line-height:1;">✕</button>
+      <button onclick="event.stopPropagation();deleteFixedCostItem('${item.id}')" class="delete-x">✕</button>
     </div>`;
   }).join("");
 }
