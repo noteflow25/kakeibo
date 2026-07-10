@@ -692,21 +692,16 @@ const CATS_INCOME = [
   {id:"carryover",emoji:"🔄", label:"繰越"},
 ];
 
-// カテゴリ別の月予算（円）。金額はあくまで初期値なので、実情に合わせて調整してください。
-const BUDGET_CATS = {
-  food:40000, dining:15000, daily:10000, transport:10000,
-  comm:8000, housing:95000, medical:5000, social:27000, savings:18000, other:22000
-};
-
-const BUDGET = {
-  ...BUDGET_CATS,
-  total: Object.values(BUDGET_CATS).reduce((s,v)=>s+v, 0)
-};
+// 予算総額は、対象月度に実際に記録した収入合計と連動する（収入額＝予算総額）
+function getBudgetTotal(periodIdx) {
+  if (periodIdx === null || periodIdx === undefined) return 0;
+  return periodTxs(periodIdx).filter(t => t.type === "income").reduce((s,t) => s + t.amount, 0);
+}
 
 // ============================================================
 // バージョン情報
 // ============================================================
-const APP_VERSION = "2.3.0"; // ← 更新するたびに番号を上げる
+const APP_VERSION = "2.4.0"; // ← 更新するたびに番号を上げる
 
 // ============================================================
 // ストレージ
@@ -927,8 +922,9 @@ function renderHome() {
   document.getElementById("homeSavingsTotal").textContent = fmt(savingsTotal);
   document.getElementById("homeFixedTotal").textContent   = fmt(fixedTotal);
 
-  // 予算バー
-  const pct = Math.min(Math.round(expense / BUDGET.total * 100), 100);
+  // 予算バー：予算総額は対象月度の実収入と連動する
+  const budgetTotal = getBudgetTotal(viewPeriodIndex);
+  const pct = budgetTotal > 0 ? Math.min(Math.round(expense / budgetTotal * 100), 100) : 0;
   const bar = document.getElementById("budgetBar");
   bar.style.width = pct + "%";
 
@@ -941,7 +937,7 @@ function renderHome() {
   const elapsedDaysRaw = daysBetween(start, todayStr) + 1;
   const elapsedDays = isLatestPeriod ? Math.max(Math.min(elapsedDaysRaw, totalDays), 0) : totalDays;
   const idealPct = Math.round(elapsedDays / totalDays * 100);
-  const remaining = BUDGET.total - expense;
+  const remaining = budgetTotal - expense;
   const remainDays = isLatestPeriod ? Math.max(totalDays - elapsedDays, 0) : 0;
 
   // 消化ペース判定（実際の消化率 vs 理想消化率）
@@ -969,7 +965,7 @@ function renderHome() {
   bar.style.background = statusColor;
 
   document.getElementById("budgetLabel").textContent = `予算消化率  ${pct}%`;
-  document.getElementById("budgetNums").textContent  = `${fmt(expense)} / ${fmt(BUDGET.total)}`;
+  document.getElementById("budgetNums").textContent  = `${fmt(expense)} / ${fmt(budgetTotal)}`;
   document.getElementById("budgetStatusIcon").textContent = statusIcon;
   document.getElementById("budgetStatusText").textContent = statusText;
   document.getElementById("budgetStatusText").style.color = statusColor;
@@ -1671,15 +1667,15 @@ function exportExcel(range) {
     };
   });
 
-  // 月次サマリーシートのデータ
+  // 月次サマリーシートのデータ（予算は実収入と連動させる）
   const income  = txs.filter(t=>t.type==="income").reduce((s,t)=>s+t.amount,0);
   const expense = txs.filter(t=>t.type==="expense").reduce((s,t)=>s+t.amount,0);
   const summary = [
     { "項目": "収入合計",   "金額": income },
     { "項目": "支出合計",   "金額": expense },
     { "項目": "収支",       "金額": income - expense },
-    { "項目": "予算",       "金額": BUDGET.total },
-    { "項目": "予算消化率", "金額": Math.round(expense / BUDGET.total * 100) + "%" },
+    { "項目": "予算（収入額）", "金額": income },
+    { "項目": "予算消化率", "金額": income > 0 ? Math.round(expense / income * 100) + "%" : "-" },
   ];
 
   // Workbookを作成
