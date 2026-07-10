@@ -542,15 +542,6 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
     </div>
   </div>
 
-  <!-- 次回支払いまでのカウントダウン（積立タブの達成率バーと同じ見た目） -->
-  <div class="budget-card" id="fcDueCard" style="display:none;">
-    <div class="budget-row">
-      <span class="budget-label">次回支払いまで</span>
-      <span class="budget-nums" id="fcDueNums"></span>
-    </div>
-    <div class="bar-track"><div class="bar-fill bar-ok" id="fcDueBar" style="width:0%"></div></div>
-  </div>
-
   <!-- 固定費一覧 -->
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
     <span class="section-title" style="margin:0;">登録済みの固定費</span>
@@ -568,14 +559,14 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
     </div>
 
     <div style="margin-bottom:8px;">
-      <input class="field-input" id="fcName" type="text" placeholder="項目名（例: 水道光熱費）" style="width:100%;padding:8px 10px;font-size:13px;">
+      <input class="field-input" id="fcName" type="text" placeholder="項目名（空欄ならカテゴリ名を使用）" style="width:100%;padding:8px 10px;font-size:13px;">
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;">
       <input class="field-input" id="fcAmount" type="number" placeholder="金額（円）" style="padding:8px 10px;font-size:13px;" inputmode="numeric">
       <input class="field-input" id="fcDueDay" type="number" placeholder="支払日（1-31）" min="1" max="31" style="padding:8px 10px;font-size:13px;" inputmode="numeric">
     </div>
     <div style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
-      金額が分からない場合は空欄のままで登録できます。使えないお金として先に項目だけ確保し、次の期間を始めるタイミングでまとめて入力を促します。
+      項目名を空欄にすると、選択したカテゴリ名がそのまま項目名になります。金額が分からない場合も空欄のままで登録できます。使えないお金として先に項目だけ確保し、次の期間を始めるタイミングでまとめて入力を促します。
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
       <button onclick="closeFixedCostForm()" style="padding:10px;border-radius:8px;border:0.5px solid var(--border);background:transparent;font-size:13px;cursor:pointer;font-family:inherit;color:var(--sub);">キャンセル</button>
@@ -665,7 +656,7 @@ const BUDGET = {
 // ============================================================
 // バージョン情報
 // ============================================================
-const APP_VERSION = "2.0.21"; // ← 更新するたびに番号を上げる
+const APP_VERSION = "2.0.22"; // ← 更新するたびに番号を上げる
 
 // ============================================================
 // ストレージ
@@ -1969,24 +1960,6 @@ function renderFixedCostsPage() {
   document.getElementById("fcHeroNextDue").textContent = nextDue
     ? `${nextDue.date.getMonth() + 1}/${nextDue.date.getDate()} ${nextDue.item.item}`
     : "-";
-
-  // 次回支払いまでのカウントダウンバー（近づくほどバーが埋まり、色が変わる）
-  const dueCard = document.getElementById("fcDueCard");
-  if (nextDue) {
-    const daysUntil = daysBetween(localDateStr(), localDateStr(nextDue.date));
-    const CYCLE_DAYS = 31; // 支払いサイクルの目安（1ヶ月分）
-    const pct = Math.max(0, Math.min(100, Math.round((CYCLE_DAYS - daysUntil) / CYCLE_DAYS * 100)));
-    const barClass = daysUntil <= 3 ? "bar-over" : daysUntil <= 7 ? "bar-warn" : "bar-ok";
-
-    dueCard.style.display = "block";
-    document.getElementById("fcDueNums").textContent =
-      daysUntil === 0 ? `本日（${nextDue.item.item}）` : `あと${daysUntil}日（${nextDue.item.item}）`;
-    const bar = document.getElementById("fcDueBar");
-    bar.className = "bar-fill " + barClass;
-    bar.style.width = pct + "%";
-  } else {
-    dueCard.style.display = "none";
-  }
 }
 
 function renderFixedCostList(cycle) {
@@ -2058,8 +2031,9 @@ function closeFixedCostForm() {
 
 // 保存（新規/編集どちらも兼ねる）。金額未入力なら「pending_registration」として仮登録する。
 function saveFixedCostItem() {
-  const name = document.getElementById("fcName").value.trim();
-  if (!name) { showToast("項目名を入力してください"); return; }
+  const catLabel = (FIXED_COST_CATS.find(c => c.id === selectedFixedCostCat) || {}).label || "その他";
+  const nameRaw = document.getElementById("fcName").value.trim();
+  const name = nameRaw || catLabel; // 未入力の場合は選択したカテゴリ名をそのまま項目名にする
 
   const amountRaw = document.getElementById("fcAmount").value;
   const amount = amountRaw ? (parseInt(amountRaw, 10) || 0) : 0;
