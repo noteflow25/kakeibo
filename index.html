@@ -656,7 +656,7 @@ const BUDGET = {
 // ============================================================
 // バージョン情報
 // ============================================================
-const APP_VERSION = "2.0.19"; // ← 更新するたびに番号を上げる
+const APP_VERSION = "2.0.20"; // ← 更新するたびに番号を上げる
 
 // ============================================================
 // ストレージ
@@ -1704,10 +1704,8 @@ function openSavingsForm(id) {
 
   // カテゴリグリッド
   document.getElementById("savingsCatGrid").innerHTML = SAVINGS_CATS.map(c =>
-    `<button class="cat-btn ${c.id===selectedSavingsCat?"selected":""}"
-      onclick="selectSavingsCat('${c.id}')"
-      style="padding:5px 2px;border-radius:8px;border:1.5px solid var(--border);background:none;cursor:pointer;font-size:10px;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:2px;">
-      <span style="font-size:16px;">${c.emoji}</span>${c.label}
+    `<button type="button" class="cat-btn ${c.id===selectedSavingsCat?"selected":""}" onclick="selectSavingsCat('${c.id}')">
+      <span class="cat-emoji">${c.emoji}</span>${c.label}
     </button>`
   ).join("");
 
