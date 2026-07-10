@@ -656,7 +656,7 @@ const BUDGET = {
 // ============================================================
 // バージョン情報
 // ============================================================
-const APP_VERSION = "2.0.18"; // ← 更新するたびに番号を上げる
+const APP_VERSION = "2.0.19"; // ← 更新するたびに番号を上げる
 
 // ============================================================
 // ストレージ
@@ -1798,8 +1798,10 @@ function saveSavingsPlan() {
 }
 
 function deleteSavingsPlan(id) {
-  const plans = loadSavingsPlans().filter(p => p.id !== id);
-  saveSavingsPlans(plans);
+  const plans = loadSavingsPlans();
+  const target = plans.find(p => p.id === id);
+  if (!confirm(`「${target ? target.name : "この積立プラン"}」を削除しますか？`)) return;
+  saveSavingsPlans(plans.filter(p => p.id !== id));
   renderSavings();
   renderHome();
   showToast("削除しました");
