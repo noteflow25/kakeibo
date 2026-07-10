@@ -91,6 +91,10 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
 .add-item-btn.blue{border-color:var(--blue);color:var(--blue);}
 .add-item-btn:active{opacity:.7;}
 .delete-x{background:none;border:none;color:var(--muted);font-size:16px;line-height:1;cursor:pointer;padding:8px 6px 8px 12px;touch-action:manipulation;}
+.fc-check{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:transparent;cursor:pointer;flex-shrink:0;padding:0;touch-action:manipulation;transition:all .15s;}
+.fc-check.checked{background:var(--green);border-color:var(--green);color:#fff;}
+.fc-item-paid .tx-name{color:var(--muted);text-decoration:line-through;}
+.fc-item-paid .tx-date{color:var(--muted);}
 
 /* ===== 積立/固定費タブ：ヒーローカード方式（案A） ===== */
 .mini-bar-track{width:100%;height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:6px;}
@@ -446,6 +450,11 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
       <button onclick="saveSavingsPlan()" style="padding:10px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;" id="savingsSubmitBtn">保存</button>
     </div>
   </div>
+
+  <div style="font-size:11px;color:var(--muted);line-height:1.7;padding:4px 2px;">
+    ここで登録した積立プランは月をまたいでも消えません。「新しい月を開始」の際に、月々の積立額が自動的に積み立てられ（残高に加算され）、月初確保の支出として計上されます。目標金額に到達したプランは、その翌月から積立が止まり、一覧からも自動的に削除されます。
+  </div>
+
   <!-- デバッグパネル -->
   <div style="margin-top:12px;">
     <button onclick="toggleDebug()" style="width:100%;padding:8px;border-radius:8px;border:0.5px solid var(--border);background:transparent;font-size:12px;color:var(--muted);cursor:pointer;font-family:inherit;">
@@ -577,7 +586,7 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
     <div class="balance-label">固定費 今月合計</div>
     <div class="balance-amount" id="fcHeroTotal">¥0</div>
     <div class="balance-sub">
-      <div class="balance-sub-item">登録項目<span id="fcHeroCount">0件</span></div>
+      <div class="balance-sub-item">支払い済み<span id="fcHeroPaidCount">0/0件</span></div>
       <div class="balance-sub-item">次回支払<span id="fcHeroNextDue">-</span></div>
     </div>
   </div>
@@ -697,7 +706,7 @@ const BUDGET = {
 // ============================================================
 // バージョン情報
 // ============================================================
-const APP_VERSION = "2.1.0"; // ← 更新するたびに番号を上げる
+const APP_VERSION = "2.3.0"; // ← 更新するたびに番号を上げる
 
 // ============================================================
 // ストレージ
@@ -2081,11 +2090,15 @@ function renderFixedCostsPage() {
   const cycle = ensureCycle();
   renderFixedCostList(cycle);
 
-  // ヒーローカード：今月合計・登録件数・次回支払
+  // ヒーローカード：今月合計・支払い済み件数・次回支払
   const registeredItems = cycle.fixed_costs;
   const heroTotal = registeredItems.reduce((s, i) => s + (i.amount || 0), 0);
   document.getElementById("fcHeroTotal").textContent = fmt(heroTotal);
-  document.getElementById("fcHeroCount").textContent = `${registeredItems.length}件`;
+
+  const periods = ensurePeriods();
+  const currentPeriodId = periods.length ? periods[periods.length - 1].id : null;
+  const paidCount = currentPeriodId ? registeredItems.filter(i => i.paid_period_id === currentPeriodId).length : 0;
+  document.getElementById("fcHeroPaidCount").textContent = `${paidCount}/${registeredItems.length}件`;
 
   // 次回支払: 支払日(due_day)が設定されている項目の中から、今日以降で最も近いものを探す
   const today = new Date();
@@ -2113,14 +2126,21 @@ function renderFixedCostList(cycle) {
     manual: ["登録済み", "var(--green-d)"],
     pending_registration: ["金額未入力", "var(--amber)"]
   };
+  // 「支払い完了」は今の月度に対してのチェックなので、最新の月度IDと突き合わせて判定する。
+  // 月が変われば最新の月度IDも変わるため、チェックは自動的にリセットされる。
+  const periods = ensurePeriods();
+  const currentPeriodId = periods.length ? periods[periods.length - 1].id : null;
+
   el.innerHTML = cycle.fixed_costs.map(item => {
     const [label, color] = badge[item.source] || ["-", "var(--muted)"];
     const cat = FIXED_COST_CATS.find(c => c.id === item.cat) || FIXED_COST_CATS[FIXED_COST_CATS.length - 1];
-    return `<div class="tx-item" style="cursor:pointer;" onclick="openFixedCostForm('${item.id}')">
+    const isPaid = currentPeriodId && item.paid_period_id === currentPeriodId;
+    return `<div class="tx-item ${isPaid ? 'fc-item-paid' : ''}" style="cursor:pointer;" onclick="openFixedCostForm('${item.id}')">
+      <button onclick="event.stopPropagation();toggleFixedCostPaid('${item.id}')" class="fc-check ${isPaid ? 'checked' : ''}" title="支払い完了にする">✓</button>
       <div class="tx-icon" style="background:var(--bg);">${cat.emoji}</div>
       <div class="tx-info">
         <div class="tx-name">${escapeHtml(item.item)}</div>
-        <div class="tx-date">${item.due_day ? `毎月${item.due_day}日` : "支払日未定"}</div>
+        <div class="tx-date">${item.due_day ? `毎月${item.due_day}日` : "支払日未定"}${isPaid ? "・支払い済み" : ""}</div>
       </div>
       <div style="text-align:right;">
         <div class="tx-amount" style="color:var(--text);">${fmt(item.amount || 0)}</div>
@@ -2129,6 +2149,21 @@ function renderFixedCostList(cycle) {
       <button onclick="event.stopPropagation();deleteFixedCostItem('${item.id}')" class="delete-x">✕</button>
     </div>`;
   }).join("");
+}
+
+// 「支払い完了」チェックのオン/オフを切り替える（今の月度に対して記録される）
+function toggleFixedCostPaid(id) {
+  const periods = ensurePeriods();
+  const currentPeriodId = periods.length ? periods[periods.length - 1].id : null;
+  if (!currentPeriodId) return;
+
+  const cycle = ensureCycle();
+  const item = cycle.fixed_costs.find(i => i.id === id);
+  if (!item) return;
+
+  item.paid_period_id = (item.paid_period_id === currentPeriodId) ? null : currentPeriodId;
+  saveCycle(cycle);
+  renderFixedCostsPage();
 }
 
 // ---- 固定費の登録・編集フォーム ----
@@ -2312,9 +2347,19 @@ function startNewMonth(startDate) {
     const txs = loadTx();
     let fixedTotal = 0, savingsTotal = 0;
 
-    // 積立: 前月の各プランに今月分を加算し、「月初確保」の支出として記録する
+    // 積立: 前月の各プランに今月分を加算し、「月初確保」の支出として記録する。
+    // ただし、既に目標金額に到達しているプラン（残高≧目標金額）は、それ以上の積立を計上せず、
+    // このタイミングで一覧からも削除する（＝目標達成後の翌月から自動整理される）。
+    // 目標「月」を過ぎていても金額が未達成のプランは、気づかず消えると困るため削除の対象にしない。
     const plans = loadSavingsPlans();
+    const remainingPlans = [];
+    let completedCount = 0;
     plans.forEach(p => {
+      const achieved = (p.amount || 0) > 0 && (p.balance || 0) >= p.amount;
+      if (achieved) {
+        completedCount++;
+        return; // remainingPlansに含めない＝削除
+      }
       if (p.monthly > 0) {
         txs.push({
           id: Date.now() + Math.random(), type: "expense", cat: "savings",
@@ -2324,8 +2369,9 @@ function startNewMonth(startDate) {
         p.balance = (p.balance || 0) + p.monthly;
         savingsTotal += p.monthly;
       }
+      remainingPlans.push(p);
     });
-    saveSavingsPlans(plans);
+    saveSavingsPlans(remainingPlans);
 
     // 固定費: 前月の項目・金額をそのまま引き継ぎ、「月初確保」の支出として記録する
     const cycle = ensureCycle();
@@ -2341,7 +2387,8 @@ function startNewMonth(startDate) {
     });
 
     saveTx(txs);
-    showToast(`固定費 ${fmt(fixedTotal)} ／積立 ${fmt(savingsTotal)} を今月度分として確保しました`);
+    const completedNote = completedCount > 0 ? `／達成した積立プラン${completedCount}件を整理しました` : "";
+    showToast(`固定費 ${fmt(fixedTotal)} ／積立 ${fmt(savingsTotal)} を今月度分として確保しました${completedNote}`);
   }
 
   // 新しい月度を開始し、表示もその月度に切り替える
