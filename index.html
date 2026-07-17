@@ -479,38 +479,6 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
       </div>
     </div>
   </div>
-
-  <!-- データ診断（表示専用。普段は目立たせない） -->
-  <div style="text-align:center;margin-top:24px;">
-    <button onclick="toggleDebug()" style="background:none;border:none;color:var(--muted);font-size:16px;letter-spacing:3px;cursor:pointer;padding:8px;">・・・</button>
-    <div id="debugPanel" style="display:none;text-align:left;background:var(--card);border:0.5px solid var(--border);border-radius:var(--radius-s);padding:12px;margin-top:6px;font-size:11px;color:var(--sub);">
-      <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px;">データ診断（表示のみ・編集不可）</div>
-
-      <!-- ストレージ確認 -->
-      <div style="margin-bottom:8px;">
-        <div style="color:var(--text);font-weight:600;margin-bottom:4px;">💾 ストレージ状態</div>
-        <div id="debugStorage"></div>
-      </div>
-
-      <!-- 計算確認 -->
-      <div style="margin-bottom:8px;">
-        <div style="color:var(--text);font-weight:600;margin-bottom:4px;">🧮 積立の計算チェック</div>
-        <div id="debugCalc"></div>
-      </div>
-
-      <!-- 警告チェック -->
-      <div style="margin-bottom:8px;">
-        <div style="color:var(--text);font-weight:600;margin-bottom:4px;">⚠️ 積立の警告チェック</div>
-        <div id="debugAlert"></div>
-      </div>
-
-      <!-- RAWデータ -->
-      <div style="margin-top:10px;">
-        <div style="color:var(--text);font-weight:600;margin-bottom:4px;">📄 積立RAWデータ</div>
-        <pre id="debugRaw" style="font-size:10px;color:var(--muted);white-space:pre-wrap;word-break:break-all;background:var(--bg);border-radius:6px;padding:8px;max-height:150px;overflow-y:auto;font-family:monospace;"></pre>
-      </div>
-    </div>
-  </div>
 </div>
 
 <!-- ===== 固定費 ===== -->
@@ -643,7 +611,7 @@ function getBudgetTotal(periodIdx) {
 // ============================================================
 // バージョン情報
 // ============================================================
-const APP_VERSION = "2.5.0"; // ← 更新するたびに番号を上げる
+const APP_VERSION = "2.5.1"; // ← 更新するたびに番号を上げる
 
 // ============================================================
 // ストレージ
@@ -1691,63 +1659,6 @@ function deleteSavingsPlan(id) {
   renderSavings();
   renderHome();
   showToast("削除しました");
-}
-
-// ============================================================
-// 積立デバッグ機能
-// ============================================================
-function toggleDebug() {
-  const panel = document.getElementById("debugPanel");
-  const isOpen = panel.style.display !== "none";
-  panel.style.display = isOpen ? "none" : "block";
-  if (!isOpen) updateDebugPanel();
-}
-
-function updateDebugPanel() {
-  const plans = loadSavingsPlans();
-  const now   = new Date();
-
-  // ストレージ状態
-  const rawData = localStorage.getItem("savings_plans") || "[]";
-  const byteSize = new Blob([rawData]).size;
-  document.getElementById("debugStorage").innerHTML = [
-    `件数: <b>${plans.length}件</b>`,
-    `データサイズ: <b>${byteSize} bytes</b>`,
-    `localStorage使用量: <b>${JSON.stringify(localStorage).length} bytes</b>`,
-    `最終更新: <b>${now.toLocaleString("ja-JP")}</b>`,
-  ].map(s => `<div style="padding:2px 0;">${s}</div>`).join("");
-
-  // 計算チェック
-  if (plans.length === 0) {
-    document.getElementById("debugCalc").innerHTML = '<div style="color:var(--muted);">プランなし</div>';
-  } else {
-    document.getElementById("debugCalc").innerHTML = plans.map(p => {
-      const months  = calcRemainingMonths(p.targetYear, p.targetMonth);
-      const remaining = Math.max((p.amount||0) - (p.balance||0), 0);
-      const monthly = Math.ceil(remaining / months);
-      const stored  = p.monthly || 0;
-      const match   = monthly === stored ? "✅" : "⚠️ 不一致";
-      return `<div style="padding:3px 0;border-bottom:0.5px solid var(--border);">
-        <b>${escapeHtml(p.name)}</b><br>
-        残り${months}ヶ月 / 不足額${fmt(remaining)} / 月々${fmt(monthly)} ${match}
-        ${monthly !== stored ? `（保存値: ${fmt(stored)}）` : ""}
-      </div>`;
-    }).join("");
-  }
-
-  // 警告チェック
-  const warnPlans = plans.filter(p => {
-    const months = calcRemainingMonths(p.targetYear, p.targetMonth);
-    const pct    = p.amount > 0 ? (p.balance||0) / p.amount : 1;
-    return months <= 2 && pct < 0.8;
-  });
-  document.getElementById("debugAlert").innerHTML = warnPlans.length === 0
-    ? '<div style="color:var(--green);">✅ 警告なし</div>'
-    : warnPlans.map(p => `<div style="color:var(--red);">⚠️ ${escapeHtml(p.name)}（残り${calcRemainingMonths(p.targetYear,p.targetMonth)}ヶ月）</div>`).join("");
-
-  // RAWデータ
-  document.getElementById("debugRaw").textContent =
-    JSON.stringify(plans, null, 2);
 }
 
 // ============================================================
