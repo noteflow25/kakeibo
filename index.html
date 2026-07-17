@@ -298,10 +298,6 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
     <div style="margin-bottom:6px;">
       <input class="field-input" id="dateInput" type="date" style="padding:6px 10px;font-size:17px;font-weight:700;width:100%;cursor:pointer;">
     </div>
-    <!-- 前の月度の残高を繰り越す（収入時のみ表示） -->
-    <div id="carryoverBtnWrap" style="display:none;margin-bottom:6px;">
-      <button type="button" onclick="applyCarryover()" style="width:100%;padding:8px;border-radius:var(--radius-s);border:1.5px dashed var(--blue);background:var(--blue-l);color:var(--blue);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">🔄 前の月度の残高を繰り越す</button>
-    </div>
     <!-- メモ＋カテゴリ（入力内容から自動判別。絵文字をタップすると手動で選べる） -->
     <div style="margin-bottom:6px;display:flex;gap:6px;align-items:center;">
       <textarea class="field-input" id="memoInput" placeholder="メモ（入力するとカテゴリを自動判別）" oninput="handleMemoInput()"
@@ -666,7 +662,7 @@ function getBudgetTotal(periodIdx) {
 // ============================================================
 // バージョン情報
 // ============================================================
-const APP_VERSION = "2.8.2"; // ← 更新するたびに番号を上げる
+const APP_VERSION = "2.9.0"; // ← 更新するたびに番号を上げる
 
 // ============================================================
 // ストレージ
@@ -985,9 +981,6 @@ function setType(type) {
   document.getElementById("submitBtn").className =
     "submit-btn " + type;
 
-  // 「前の月度の残高を繰り越す」ボタンは収入入力のときだけ表示する
-  document.getElementById("carryoverBtnWrap").style.display = type === "income" ? "block" : "none";
-
   updateCatEmojiBtn();
 }
 
@@ -1018,43 +1011,6 @@ function pickCat(id) {
   catAutoLocked = true; // 手動でカテゴリを選んだら、以降このメモ欄では自動判別しない
   updateCatEmojiBtn();
   closeCatPicker();
-}
-
-// 前の月度の残高を自動計算して入力する
-function applyCarryover() {
-  if (viewPeriodIndex === null) {
-    showToast("前の月度がありません");
-    return;
-  }
-  const prevIdx = viewPeriodIndex - 1;
-  if (prevIdx < 0) {
-    showToast("前の月度がありません");
-    return;
-  }
-  const prevLabel = periodLabel(prevIdx);
-
-  // 前の月度の全取引を集計
-  const txs     = periodTxs(prevIdx);
-  const income  = txs.filter(t=>t.type==="income").reduce((s,t)=>s+t.amount,0);
-  const expense = txs.filter(t=>t.type==="expense").reduce((s,t)=>s+t.amount,0);
-  const balance = income - expense;
-
-  if (balance <= 0) {
-    showToast(`${prevLabel}の残高は¥${balance.toLocaleString()}です。繰越額を確認してください。`);
-    return;
-  }
-
-  // カテゴリを繰越に設定して金額を自動入力
-  selectedCat = "carryover";
-  catAutoLocked = true; // 繰越はメモの自動判別で上書きされないようにする
-  inputAmt    = String(balance);
-  document.getElementById("amountDisplay").textContent = "¥" + balance.toLocaleString("ja-JP");
-
-  // メモに前の月度の残高を自動設定
-  document.getElementById("memoInput").value = `${prevLabel}繰越`;
-
-  updateCatEmojiBtn();
-  showToast(`${prevLabel}の残高 ¥${balance.toLocaleString()} を引き継ぎます`);
 }
 
 // メモ欄の入力からカテゴリを自動判別する（手動選択後は動作しない）
@@ -2127,7 +2083,23 @@ function startNewMonth(startDate) {
 
   if (!isFirstTime) {
     const txs = loadTx();
-    let fixedTotal = 0, savingsTotal = 0;
+    let fixedTotal = 0, savingsTotal = 0, carryoverAmount = 0;
+
+    // 前月度の残高（収入-支出）を自動的に繰り越す（黒字の場合のみ）。
+    // 前月度はまだ新しい月度を作る前の「最新の月度」＝periods配列の最後の要素。
+    const prevIdx = periods.length - 1;
+    const prevTxs = periodTxs(prevIdx);
+    const prevIncome = prevTxs.filter(t => t.type === "income").reduce((s,t) => s + t.amount, 0);
+    const prevExpense = prevTxs.filter(t => t.type === "expense").reduce((s,t) => s + t.amount, 0);
+    const prevBalance = prevIncome - prevExpense;
+    if (prevBalance > 0) {
+      txs.push({
+        id: Date.now() + Math.random(), type: "income", cat: "carryover",
+        amount: prevBalance, memo: "先月繰り越し",
+        date: today, source: "cycle_carryover"
+      });
+      carryoverAmount = prevBalance;
+    }
 
     // 積立: 前月の各プランに今月分を加算し、「月初確保」の支出として記録する。
     // ただし、既に目標金額に到達しているプラン（残高≧目標金額）は、それ以上の積立を計上せず、
@@ -2170,7 +2142,8 @@ function startNewMonth(startDate) {
 
     saveTx(txs);
     const completedNote = completedCount > 0 ? `／達成した積立プラン${completedCount}件を整理しました` : "";
-    showToast(`固定費 ${fmt(fixedTotal)} ／積立 ${fmt(savingsTotal)} を今月度分として確保しました${completedNote}`);
+    const carryoverNote = carryoverAmount > 0 ? `／先月繰り越し ${fmt(carryoverAmount)}` : "";
+    showToast(`固定費 ${fmt(fixedTotal)} ／積立 ${fmt(savingsTotal)} を今月度分として確保しました${carryoverNote}${completedNote}`);
   }
 
   // 新しい月度を開始し、表示もその月度に切り替える
