@@ -291,7 +291,7 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
     <div class="cat-grid" id="catGrid" style="margin-bottom:6px;"></div>
     <!-- メモ（支出は1行・収入は3行。高さはsetType()内で切替） -->
     <div style="margin-bottom:6px;">
-      <textarea class="field-input" id="memoInput" placeholder="メモ（任意）"
+      <textarea class="field-input" id="memoInput" placeholder="メモ（任意・入力するとカテゴリを自動で判別します）" oninput="handleMemoInput()"
         style="padding:6px 10px;font-size:12px;width:100%;resize:none;line-height:1.5;font-family:inherit;"></textarea>
     </div>
     <!-- 記録ボタン -->
@@ -399,7 +399,7 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
 
     <!-- 目的名 -->
     <div style="margin-bottom:8px;">
-      <input class="field-input" id="savingsName" type="text" placeholder="目的名（例: 車検費用）" style="width:100%;padding:8px 10px;font-size:13px;">
+      <input class="field-input" id="savingsName" type="text" placeholder="目的名（例: 車検費用・入力するとカテゴリを自動判別）" oninput="handleSavingsNameInput()" style="width:100%;padding:8px 10px;font-size:13px;">
     </div>
 
     <!-- 必要金額 -->
@@ -519,7 +519,7 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
     </div>
 
     <div style="margin-bottom:8px;">
-      <input class="field-input" id="fcName" type="text" placeholder="項目名（空欄ならカテゴリ名を使用）" style="width:100%;padding:8px 10px;font-size:13px;">
+      <input class="field-input" id="fcName" type="text" placeholder="項目名（空欄ならカテゴリ名を使用・入力で自動判別）" oninput="handleFcNameInput()" style="width:100%;padding:8px 10px;font-size:13px;">
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;">
       <input class="field-input" id="fcAmount" type="number" placeholder="金額（円）" style="padding:8px 10px;font-size:13px;" inputmode="numeric">
@@ -602,6 +602,40 @@ const CATS_INCOME = [
   {id:"carryover",emoji:"🔄", label:"繰越"},
 ];
 
+// ============================================================
+// カテゴリ自動判別（メモ・項目名・目的名などのテキストからキーワードで判定）
+// ============================================================
+// テキストにキーワードが含まれていれば、対応するカテゴリIDを返す（先に定義した方が優先）。
+// 一致するキーワードが無ければnullを返し、その場合は選択中のカテゴリを変更しない。
+function matchCategoryId(text, keywordMap) {
+  if (!text) return null;
+  for (const [catId, keywords] of Object.entries(keywordMap)) {
+    if (keywords.some(kw => text.includes(kw))) return catId;
+  }
+  return null;
+}
+
+const EXPENSE_CAT_KEYWORDS = {
+  dining:    ["外食","ランチ","ディナー","飲み会","居酒屋","カフェ","レストラン","喫茶","ファミレス","牛丼","ラーメン","寿司","焼肉","定食"],
+  food:      ["食品","食料","スーパー","野菜","肉","魚","米","牛乳","パン","卵","惣菜","弁当","調味料","食材"],
+  daily:     ["日用品","洗剤","ティッシュ","トイレットペーパー","シャンプー","雑貨","ドラッグストア","消耗品"],
+  transport: ["交通","電車","バス","タクシー","ガソリン","高速","駐車場","定期","新幹線","飛行機","ETC"],
+  comm:      ["通信","スマホ","携帯","ネット","wifi","Wi-Fi","プロバイダ","回線"],
+  housing:   ["家賃","住居","マンション","アパート","管理費","修繕"],
+  medical:   ["病院","医療","薬","通院","診察","歯医者","クリニック"],
+  social:    ["交際","プレゼント","お祝い","結婚式","香典","ご祝儀","飲み会"],
+  savings:   ["貯蓄","積立"],
+};
+
+const INCOME_CAT_KEYWORDS = {
+  bonus:  ["賞与","ボーナス"],
+  salary: ["給与","給料","月給"],
+  side:   ["副業","バイト","アルバイト","フリーランス","業務委託"],
+  invest: ["投資","配当","株","利息","分配金"],
+  pension:["年金"],
+  rent:   ["家賃収入","賃貸"],
+};
+
 // 予算総額は、対象月度に実際に記録した収入合計と連動する（収入額＝予算総額）
 function getBudgetTotal(periodIdx) {
   if (periodIdx === null || periodIdx === undefined) return 0;
@@ -611,7 +645,7 @@ function getBudgetTotal(periodIdx) {
 // ============================================================
 // バージョン情報
 // ============================================================
-const APP_VERSION = "2.5.1"; // ← 更新するたびに番号を上げる
+const APP_VERSION = "2.6.0"; // ← 更新するたびに番号を上げる
 
 // ============================================================
 // ストレージ
@@ -912,11 +946,13 @@ function renderHome() {
 let inputType = "expense";
 let inputAmt  = "";
 let selectedCat = "";
+let catAutoLocked = false; // trueの間は、メモ入力によるカテゴリ自動判別を行わない（手動選択を優先）
 
 function setType(type) {
   inputType = type;
   const cats = type === "expense" ? CATS_EXPENSE : CATS_INCOME;
   selectedCat = cats[0].id;
+  catAutoLocked = false; // 支出/収入を切り替えたら自動判別を再度有効にする
 
   document.getElementById("typeExpense").className =
     "type-btn" + (type==="expense" ? " active-expense" : "");
@@ -1002,7 +1038,20 @@ function applyCarryover() {
 
 function selectCat(id) {
   selectedCat = id;
+  catAutoLocked = true; // 手動でカテゴリを選んだら、以降このメモ欄では自動判別しない
   renderCatGrid();
+}
+
+// メモ欄の入力からカテゴリを自動判別する（手動選択後は動作しない）
+function handleMemoInput() {
+  if (catAutoLocked) return;
+  const text = document.getElementById("memoInput").value.trim();
+  const map = inputType === "expense" ? EXPENSE_CAT_KEYWORDS : INCOME_CAT_KEYWORDS;
+  const matched = matchCategoryId(text, map);
+  if (matched && matched !== selectedCat) {
+    selectedCat = matched;
+    renderCatGrid();
+  }
 }
 
 function inputNum(v) {
@@ -1036,6 +1085,9 @@ function submitTx() {
   inputAmt = "";
   document.getElementById("amountDisplay").textContent = "¥0";
   document.getElementById("memoInput").value = "";
+  catAutoLocked = false; // 次の入力に備えて自動判別を再度有効にする
+  selectedCat = (inputType === "expense" ? CATS_EXPENSE : CATS_INCOME)[0].id;
+  renderCatGrid();
   showToast(inputType==="expense" ? "支出を記録しました" : "収入を記録しました");
   renderHome();
 
@@ -1440,8 +1492,21 @@ const SAVINGS_CATS = [
   {id:"other",  emoji:"📦", label:"その他"},
 ];
 
+const SAVINGS_CAT_KEYWORDS = {
+  car:     ["車検","自動車","車","タイヤ","カー"],
+  travel:  ["旅行","旅","温泉","ホテル","航空券"],
+  house:   ["住居","家","リフォーム","修繕","引っ越し","引越し"],
+  medical: ["医療","入院","手術","病気"],
+  insure:  ["保険"],
+  tax:     ["税金","固定資産税","住民税","確定申告"],
+  gift:    ["お祝い","プレゼント","結婚","出産"],
+  edu:     ["教育","学費","授業料","受験","塾"],
+  hobby:   ["趣味","ゲーム","カメラ","楽器"],
+};
+
 let editingSavingsId = null;
 let selectedSavingsCat = "other";
+let savingsCatAutoLocked = false; // trueの間は、目的名の入力によるカテゴリ自動判別を行わない
 
 function loadSavingsPlans() {
   try { return JSON.parse(localStorage.getItem("savings_plans") || "[]"); } catch { return []; }
@@ -1559,11 +1624,7 @@ function openSavingsForm(id) {
   }
 
   // カテゴリグリッド
-  document.getElementById("savingsCatGrid").innerHTML = SAVINGS_CATS.map(c =>
-    `<button type="button" class="cat-btn ${c.id===selectedSavingsCat?"selected":""}" onclick="selectSavingsCat('${c.id}')">
-      <span class="cat-emoji">${c.emoji}</span>${c.label}
-    </button>`
-  ).join("");
+  renderSavingsCatGrid();
 
   // 既存データ編集の場合
   if (id) {
@@ -1576,6 +1637,7 @@ function openSavingsForm(id) {
       document.getElementById("savingsYear").value    = p.targetYear;
       document.getElementById("savingsMonth").value   = p.targetMonth;
       selectedSavingsCat = p.cat;
+      savingsCatAutoLocked = true; // 既存データ編集時は、名前を少し直しても自動判別で上書きしない
       document.getElementById("savingsFormTitle").textContent = "積立プランを編集";
       document.getElementById("savingsSubmitBtn").textContent = "更新";
     }
@@ -1583,9 +1645,11 @@ function openSavingsForm(id) {
     document.getElementById("savingsName").value    = "";
     document.getElementById("savingsAmount").value  = "";
     document.getElementById("savingsBalance").value = "";
+    savingsCatAutoLocked = false; // 新規作成時は自動判別を有効にする
     document.getElementById("savingsFormTitle").textContent = "新しい積立プラン";
     document.getElementById("savingsSubmitBtn").textContent = "保存";
   }
+  renderSavingsCatGrid();
 
   // 入力変化で逆算
   ["savingsAmount","savingsBalance","savingsYear","savingsMonth"].forEach(id => {
@@ -1593,6 +1657,25 @@ function openSavingsForm(id) {
     document.getElementById(id).addEventListener("change", updateSavingsCalc);
   });
   updateSavingsCalc();
+}
+
+function renderSavingsCatGrid() {
+  document.getElementById("savingsCatGrid").innerHTML = SAVINGS_CATS.map(c =>
+    `<button type="button" class="cat-btn ${c.id===selectedSavingsCat?"selected":""}" onclick="selectSavingsCat('${c.id}')">
+      <span class="cat-emoji">${c.emoji}</span>${c.label}
+    </button>`
+  ).join("");
+}
+
+// 目的名の入力からカテゴリを自動判別する（手動選択後・編集時は動作しない）
+function handleSavingsNameInput() {
+  if (savingsCatAutoLocked) return;
+  const text = document.getElementById("savingsName").value.trim();
+  const matched = matchCategoryId(text, SAVINGS_CAT_KEYWORDS);
+  if (matched && matched !== selectedSavingsCat) {
+    selectedSavingsCat = matched;
+    renderSavingsCatGrid();
+  }
 }
 
 function updateSavingsCalc() {
@@ -1615,8 +1698,8 @@ function updateSavingsCalc() {
 
 function selectSavingsCat(id) {
   selectedSavingsCat = id;
-  document.querySelectorAll("#savingsCatGrid .cat-btn").forEach(b => b.classList.remove("selected"));
-  event.target.closest("button").classList.add("selected");
+  savingsCatAutoLocked = true; // 手動でカテゴリを選んだら、以降このフォームでは自動判別しない
+  renderSavingsCatGrid();
 }
 
 function closeSavingsForm() {
@@ -1684,6 +1767,18 @@ const FIXED_COST_CATS = [
   {id:"beauty",    emoji:"💇", label:"美容代"},
   {id:"other",     emoji:"📦", label:"その他"},
 ];
+
+const FIXED_COST_CAT_KEYWORDS = {
+  utility:   ["水道","電気","ガス","光熱費"],
+  credit:    ["クレジット","クレカ","カード払い","カード引き落とし"],
+  loan:      ["ローン","借入","返済"],
+  phone:     ["スマホ","携帯","電話代"],
+  vod:       ["サブスク","VOD","Netflix","ネットフリックス","Amazon","Hulu","フールー","Disney","ディズニー","配信"],
+  medical:   ["病院","通院","治療","薬"],
+  allowance: ["お小遣い","こづかい","小遣い"],
+  insurance: ["保険","生命保険","自動車保険","火災保険"],
+  beauty:    ["美容","美容院","エステ","ネイル","床屋","理容"],
+};
 
 // 初回アクセス時にサイクルが無ければ空の器を用意する。
 // 旧バージョンで作られた項目にid/catが無い場合はここで補完する。
@@ -1786,6 +1881,7 @@ function toggleFixedCostPaid(id) {
 // ---- 固定費の登録・編集フォーム ----
 let editingFixedCostId = null;
 let selectedFixedCostCat = "other";
+let fcCatAutoLocked = false; // trueの間は、項目名の入力によるカテゴリ自動判別を行わない
 
 function renderFixedCostCatGrid() {
   document.getElementById("fcCatGrid").innerHTML = FIXED_COST_CATS.map(c =>
@@ -1796,7 +1892,19 @@ function renderFixedCostCatGrid() {
 }
 function selectFixedCostCat(id) {
   selectedFixedCostCat = id;
+  fcCatAutoLocked = true; // 手動でカテゴリを選んだら、以降このフォームでは自動判別しない
   renderFixedCostCatGrid();
+}
+
+// 項目名の入力からカテゴリを自動判別する（手動選択後・編集時は動作しない）
+function handleFcNameInput() {
+  if (fcCatAutoLocked) return;
+  const text = document.getElementById("fcName").value.trim();
+  const matched = matchCategoryId(text, FIXED_COST_CAT_KEYWORDS);
+  if (matched && matched !== selectedFixedCostCat) {
+    selectedFixedCostCat = matched;
+    renderFixedCostCatGrid();
+  }
 }
 
 // 新規登録、または既存項目をタップして編集
@@ -1810,6 +1918,7 @@ function openFixedCostForm(id = null) {
   document.getElementById("fcAmount").value = item && item.amount ? item.amount : "";
   document.getElementById("fcDueDay").value = item && item.due_day ? item.due_day : "";
   selectedFixedCostCat = (item && item.cat) || "other";
+  fcCatAutoLocked = !!item; // 既存項目の編集時は自動判別しない、新規作成時は有効にする
   renderFixedCostCatGrid();
 
   document.getElementById("fixedCostForm").style.display = "block";
