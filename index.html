@@ -188,6 +188,24 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
 .export-title{font-size:16px;font-weight:600;color:var(--sub);margin-bottom:10px;}
 .export-note{font-size:14px;color:var(--muted);margin-top:8px;line-height:1.6;}
 
+/* ===== ランチャー（アイコングリッドのホーム画面） ===== */
+.launcher-widget{background:var(--green);border-radius:var(--radius);padding:16px 18px;margin-bottom:22px;color:#fff;}
+.launcher-widget-label{font-size:14px;opacity:.85;margin-bottom:2px;}
+.launcher-widget-month{font-size:14px;opacity:.85;}
+.launcher-widget-amount{font-size:32px;font-weight:700;letter-spacing:-1px;}
+.icon-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px 12px;}
+.icon-tile{display:flex;flex-direction:column;align-items:center;gap:8px;background:none;border:none;cursor:pointer;font-family:inherit;padding:0;touch-action:manipulation;}
+.icon-tile-box{width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.12);}
+.icon-tile-box svg{width:30px;height:30px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.icon-tile-label{font-size:15px;font-weight:600;color:var(--text);}
+.icon-tile:active .icon-tile-box{transform:scale(.93);}
+.icon-tile.t-home  .icon-tile-box{background:var(--green);}
+.icon-tile.t-input .icon-tile-box{background:var(--teal);}
+.icon-tile.t-graph .icon-tile-box{background:var(--purple);}
+.icon-tile.t-savings .icon-tile-box{background:var(--rose);}
+.icon-tile.t-fixedcosts .icon-tile-box{background:var(--navy);}
+.icon-tile.t-utility .icon-tile-box{background:var(--gray);}
+
 /* アニメーション */
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 .page.active>*{animation:fadeUp .3s ease both;}
@@ -202,8 +220,44 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
 <!-- トースト通知 -->
 <div class="toast" id="toast"></div>
 
+<!-- ===== ランチャー（開いたときに最初に表示するアイコングリッド） ===== -->
+<div class="page active" id="page-launcher">
+  <div class="launcher-widget" onclick="showPage('home')">
+    <div class="launcher-widget-label">今月度の残高</div>
+    <div class="launcher-widget-amount" id="launcherBalance">¥0</div>
+    <div class="launcher-widget-month" id="launcherMonth"></div>
+  </div>
+
+  <div class="icon-grid">
+    <button class="icon-tile t-input" onclick="showPage('input')">
+      <span class="icon-tile-box"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span>
+      <span class="icon-tile-label">入力</span>
+    </button>
+    <button class="icon-tile t-home" onclick="showPage('home')">
+      <span class="icon-tile-box"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+      <span class="icon-tile-label">取引・残高</span>
+    </button>
+    <button class="icon-tile t-graph" onclick="showPage('graph')">
+      <span class="icon-tile-box"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
+      <span class="icon-tile-label">グラフ</span>
+    </button>
+    <button class="icon-tile t-savings" onclick="showPage('savings')">
+      <span class="icon-tile-box"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2z"/><path d="M12 6v6l4 2"/></svg></span>
+      <span class="icon-tile-label">積立</span>
+    </button>
+    <button class="icon-tile t-fixedcosts" onclick="showPage('fixedcosts')">
+      <span class="icon-tile-box"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg></span>
+      <span class="icon-tile-label">固定費</span>
+    </button>
+    <button class="icon-tile t-utility" onclick="showPage('utility')">
+      <span class="icon-tile-box"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></span>
+      <span class="icon-tile-label">その他</span>
+    </button>
+  </div>
+</div>
+
 <!-- ===== ホーム ===== -->
-<div class="page active" id="page-home">
+<div class="page" id="page-home">
   <div class="month-header">
     <button class="month-nav" data-dir="-1" onclick="changePeriod(-1)">‹</button>
     <span class="month-title" id="monthTitle"></span>
@@ -589,7 +643,7 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
 
 <!-- ===== ナビゲーション ===== -->
 <nav class="nav">
-  <button class="nav-btn active" id="nav-home" data-tab="home" onclick="showPage('home')">
+  <button class="nav-btn active" id="nav-launcher" data-tab="home" onclick="showPage('launcher')">
     <span class="nav-icon-wrap"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
     ホーム
   </button>
@@ -685,7 +739,7 @@ function getBudgetTotal(periodIdx) {
 // ============================================================
 // バージョン情報
 // ============================================================
-const APP_VERSION = "2.10.0"; // ← 更新するたびに番号を上げる
+const APP_VERSION = "2.11.0"; // ← 更新するたびに番号を上げる
 
 // ============================================================
 // ストレージ
@@ -1317,14 +1371,25 @@ function renderCatSummary(idx) {
 // ページ切替
 // ============================================================
 function showPage(name) {
-  ["home","input","graph","savings","fixedcosts","utility"].forEach(p => {
-    document.getElementById(`page-${p}`).classList.toggle("active", p===name);
-    document.getElementById(`nav-${p}`).classList.toggle("active", p===name);
+  ["launcher","home","input","graph","savings","fixedcosts","utility"].forEach(p => {
+    document.getElementById(`page-${p}`)?.classList.toggle("active", p===name);
+    document.getElementById(`nav-${p}`)?.classList.toggle("active", p===name);
   });
+  if (name==="launcher")   { renderHome(); updateLauncherWidget(); }
   if (name==="home")       renderHome();
   if (name==="graph")      renderGraph();
   if (name==="savings")    { renderSavings(); toggleFlowBanner("flowNextToFixed", newMonthFlowStep === "savings"); }
   if (name==="fixedcosts") { renderFixedCostsPage(); toggleFlowBanner("flowFinish", newMonthFlowStep === "fixedcosts"); }
+}
+
+// ランチャー（アイコングリッド）上の残高ウィジェットを、ホーム画面の集計結果を使って更新
+function updateLauncherWidget() {
+  const b = document.getElementById("balanceAmount");
+  const m = document.getElementById("monthTitle");
+  const lb = document.getElementById("launcherBalance");
+  const lm = document.getElementById("launcherMonth");
+  if (b && lb) lb.textContent = b.textContent;
+  if (m && lm) lm.textContent = m.textContent;
 }
 
 function toggleFlowBanner(id, show) {
@@ -2258,6 +2323,7 @@ function init() {
 
   setType("expense");
   renderHome();
+  updateLauncherWidget();
   ensureCycle();
 
   if ("serviceWorker" in navigator) {
