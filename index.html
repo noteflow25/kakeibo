@@ -194,12 +194,12 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
 .launcher-widget{background:var(--green);border-radius:var(--radius);padding:16px 18px;margin-bottom:18px;color:#fff;}
 .launcher-widget-label{font-size:14px;opacity:.85;margin-bottom:2px;}
 .launcher-widget-month{font-size:14px;opacity:.85;}
-.launcher-widget-amount{font-size:32px;font-weight:700;letter-spacing:-1px;}
-.icon-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
-.icon-tile{display:flex;flex-direction:column;align-items:center;gap:10px;background:none;border:none;cursor:pointer;font-family:inherit;padding:0;touch-action:manipulation;}
-.icon-tile-box{width:100%;aspect-ratio:1;border-radius:26px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(0,0,0,.14);}
-.icon-tile-box svg{width:42%;height:42%;stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
-.icon-tile-label{font-size:19px;font-weight:700;color:var(--text);}
+.launcher-widget-amount{font-size:44px;font-weight:700;letter-spacing:-1px;}
+.icon-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.icon-tile{display:flex;flex-direction:column;align-items:center;gap:8px;background:none;border:none;cursor:pointer;font-family:inherit;padding:0;touch-action:manipulation;}
+.icon-tile-box{width:100%;aspect-ratio:1;border-radius:22px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(0,0,0,.14);position:relative;overflow:hidden;}
+.icon-tile-box svg{width:44%;height:44%;stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;position:relative;z-index:1;}
+.icon-tile-label{font-size:16px;font-weight:700;color:var(--text);}
 .icon-tile:active .icon-tile-box{transform:scale(.94);}
 .icon-tile.t-home     .icon-tile-box{background:var(--green);}
 .icon-tile.t-input    .icon-tile-box{background:var(--orange);}
@@ -207,10 +207,14 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
 .icon-tile.t-savings  .icon-tile-box{background:var(--rose);}
 .icon-tile.t-fixedcosts .icon-tile-box{background:var(--purple);}
 .icon-tile.t-utility  .icon-tile-box{background:var(--gray);}
+.icon-tile.t-camera   .icon-tile-box{background:var(--amber);}
 
-/* 画面右下に固定表示するホームへ戻るボタン（ランチャー以外の全ページで表示） */
-.fab-home{position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom));width:56px;height:56px;border-radius:50%;background:var(--green);color:#fff;border:none;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.25);z-index:150;cursor:pointer;touch-action:manipulation;}
-.fab-home svg{width:26px;height:26px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+/* 画面下部のホームタブ（ランチャー以外の全ページで表示） */
+.home-tab-bar{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);z-index:150;padding:8px 0 calc(8px + env(safe-area-inset-bottom));display:none;}
+.home-tab-bar.show{display:flex;}
+.home-tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:none;border:none;color:var(--green-d);font-size:14px;font-weight:700;cursor:pointer;padding:6px 2px;font-family:inherit;min-height:60px;touch-action:manipulation;}
+.home-tab-icon{width:38px;height:38px;border-radius:11px;background:var(--green);display:flex;align-items:center;justify-content:center;}
+.home-tab-icon svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
 
 /* アニメーション */
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
@@ -234,26 +238,24 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
     <div class="launcher-widget-month" id="launcherMonth"></div>
   </div>
 
-  <!-- レシート記録（長押しで起動） -->
-  <button id="receiptBtn"
-          style="position:relative;overflow:hidden;display:block;width:100%;padding:20px;border-radius:var(--radius);border:none;background:var(--amber);color:#fff;font-size:20px;font-weight:700;cursor:pointer;font-family:inherit;box-sizing:border-box;margin-bottom:10px;-webkit-user-select:none;user-select:none;touch-action:manipulation;"
-          onpointerdown="startHoldReceipt()" onpointerup="cancelHoldReceipt()"
-          onpointerleave="cancelHoldReceipt()" onpointercancel="cancelHoldReceipt()">
-    <span id="receiptBtnFill" style="position:absolute;top:0;left:0;bottom:0;width:0%;background:rgba(255,255,255,.35);pointer-events:none;"></span>
-    <span style="position:relative;">📷 長押しでレシートを記録</span>
-  </button>
-  <div style="font-size:13px;color:var(--muted);margin:0 0 20px;line-height:1.6;">
-    「背面タップ」にこのShortcutを割り当てると、ワンタップで記録できます。
-  </div>
-
   <div class="icon-grid">
+    <button class="icon-tile t-camera" id="receiptTile"
+            onpointerdown="startHoldReceipt()" onpointerup="cancelHoldReceipt()"
+            onpointerleave="cancelHoldReceipt()" onpointercancel="cancelHoldReceipt()"
+            style="-webkit-user-select:none;user-select:none;">
+      <span class="icon-tile-box">
+        <span id="receiptBtnFill" style="position:absolute;inset:0;width:0%;background:rgba(255,255,255,.35);pointer-events:none;"></span>
+        <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      </span>
+      <span class="icon-tile-label">レシート</span>
+    </button>
     <button class="icon-tile t-input" onclick="showPage('input')">
       <span class="icon-tile-box"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span>
       <span class="icon-tile-label">入力</span>
     </button>
     <button class="icon-tile t-home" onclick="showPage('home')">
-      <span class="icon-tile-box"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
-      <span class="icon-tile-label">取引・残高</span>
+      <span class="icon-tile-box"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/></svg></span>
+      <span class="icon-tile-label">きろく</span>
     </button>
     <button class="icon-tile t-graph" onclick="showPage('graph')">
       <span class="icon-tile-box"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
@@ -272,7 +274,12 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
       <span class="icon-tile-label">その他</span>
     </button>
   </div>
+
+  <div style="font-size:13px;color:var(--muted);margin-top:16px;line-height:1.6;text-align:center;">
+    「レシート」は長押しで記録できます。「背面タップ」にこのShortcutを割り当てると、ワンタップで記録できます。
+  </div>
 </div>
+
 
 <!-- ===== ホーム ===== -->
 <div class="page" id="page-home">
@@ -577,6 +584,10 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
       </div>
     </div>
   </div>
+
+  <div style="text-align:right;font-size:12px;color:var(--muted);opacity:0.7;margin-top:14px;font-variant-numeric:tabular-nums;">
+    v<span id="versionText"></span>
+  </div>
 </div>
 
 <!-- ===== 固定費 ===== -->
@@ -639,18 +650,13 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
   </div>
 </div>
 
-<!-- バージョン表示 -->
-<div id="versionBadge" style="
-  position:fixed;bottom:calc(62px + env(safe-area-inset-bottom));right:8px;
-  font-size:12px;color:var(--muted);opacity:0.6;
-  pointer-events:none;z-index:99;
-  font-variant-numeric:tabular-nums;
-">v<span id="versionText"></span></div>
-
-<!-- ===== ホームへ戻るボタン（ランチャー以外の画面に固定表示） ===== -->
-<button class="fab-home" id="fabHome" onclick="showPage('launcher')" style="display:none;" aria-label="ホームへ戻る">
-  <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-</button>
+<!-- ===== ホームタブ（ランチャー以外の画面の下部に固定表示） ===== -->
+<div class="home-tab-bar" id="homeTabBar">
+  <button class="home-tab-btn" onclick="showPage('launcher')">
+    <span class="home-tab-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+    ホーム
+  </button>
+</div>
 
 <script>
 // ============================================================
@@ -722,7 +728,7 @@ function getBudgetTotal(periodIdx) {
 // ============================================================
 // バージョン情報
 // ============================================================
-const APP_VERSION = "2.12.0"; // ← 更新するたびに番号を上げる
+const APP_VERSION = "2.13.0"; // ← 更新するたびに番号を上げる
 
 // ============================================================
 // ストレージ
@@ -1358,8 +1364,8 @@ function showPage(name) {
     document.getElementById(`page-${p}`)?.classList.toggle("active", p===name);
     document.getElementById(`nav-${p}`)?.classList.toggle("active", p===name);
   });
-  const fab = document.getElementById("fabHome");
-  if (fab) fab.style.display = (name === "launcher") ? "none" : "flex";
+  const homeTab = document.getElementById("homeTabBar");
+  if (homeTab) homeTab.classList.toggle("show", name !== "launcher");
   if (name==="launcher")   { renderHome(); updateLauncherWidget(); }
   if (name==="home")       renderHome();
   if (name==="graph")      renderGraph();
