@@ -255,6 +255,8 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
 
 <!-- レシート写真：選択用（画面には表示しない） -->
 <input type="file" id="receiptFileInput" accept="image/*" style="display:none;" onchange="onReceiptFileChosen(event)">
+<!-- レシート写真：月フォルダ一括選択用（画面には表示しない） -->
+<input type="file" id="receiptFolderInput" webkitdirectory directory multiple style="display:none;" onchange="onReceiptFolderChosen(event)">
 
 <!-- レシート写真ビューア（フルスクリーン表示） -->
 <div class="receipt-viewer-overlay" id="receiptViewerOverlay" onclick="if(event.target===this) closeReceiptViewer()">
@@ -580,6 +582,17 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
 
 <!-- ===== ユーティリティ ===== -->
 <div class="page" id="page-utility">
+  <div class="section-title" style="margin-top:4px">レシート写真の一括反映</div>
+  <div class="export-section">
+    <div style="font-size:16px;color:var(--sub);margin-bottom:8px;line-height:1.6;">
+      Filesアプリの「レシート」フォルダ内、月ごとのフォルダ（例：2026-07）を選ぶと、フォルダ内の写真と各取引を撮影時刻から自動で突き合わせて一括で紐付けます。取引1件ごとに選ぶ必要はありません。月が変わったら、その月のフォルダで再度実行してください。
+    </div>
+    <button class="export-btn" style="background:var(--amber-l);border-color:var(--amber);color:var(--amber);" onclick="openReceiptFolderPicker()">
+      📂 レシート写真フォルダを選んで一括反映
+    </button>
+    <div id="receiptMatchResult" style="font-size:16px;color:var(--sub);margin-top:8px;line-height:1.6;"></div>
+  </div>
+
   <div class="section-title" style="margin-top:4px">データのバックアップ</div>
   <div class="export-section">
     <div style="font-size:16px;color:var(--sub);margin-bottom:8px;line-height:1.6;">
@@ -764,7 +777,7 @@ function getBudgetTotal(periodIdx) {
 // ============================================================
 // バージョン情報
 // ============================================================
-const APP_VERSION = "2.16.1"; // ← 更新するたびに番号を上げる
+const APP_VERSION = "2.18.0"; // ← 更新するたびに番号を上げる
 
 // ============================================================
 // ストレージ
@@ -858,6 +871,72 @@ async function handleReceiptTap(txId) {
   }
   openReceiptPicker(txId);
 }
+function openReceiptFolderPicker() {
+  document.getElementById("receiptFolderInput").value = "";
+  document.getElementById("receiptFolderInput").click();
+}
+
+// ファイル名から撮影時刻を推定する。対応パターン:
+//   "20260724_170111"（yyyyMMdd_HHmmss）/ "2026-07-24_17-01-11" 等、数字8桁+数字6桁を含むもの
+function parseTimeFromFilename(name) {
+  const digits = name.replace(/[^\d]/g, "");
+  // 先頭から yyyyMMddHHmmss（14桁）を探す
+  const m = digits.match(/(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/);
+  if (!m) return null;
+  const [, y, mo, d, h, mi, s] = m;
+  const t = new Date(`${y}-${mo}-${d}T${h}:${mi}:${s}`);
+  return isNaN(t.getTime()) ? null : t;
+}
+
+async function onReceiptFolderChosen(e) {
+  const files = Array.from(e.target.files || []).filter(f => /^image\//.test(f.type));
+  const resultEl = document.getElementById("receiptMatchResult");
+  if (files.length === 0) {
+    resultEl.textContent = "画像ファイルが見つかりませんでした。フォルダの選び方を確認してください。";
+    return;
+  }
+  resultEl.textContent = `${files.length}件の写真を確認中…`;
+
+  // ファイル名から時刻を抽出できたものだけを候補にする
+  const candidates = files
+    .map(f => ({ file: f, time: parseTimeFromFilename(f.name) }))
+    .filter(c => c.time);
+
+  // まだ写真が紐付いていない、ショートカット経由の取引だけを対象にする
+  await refreshReceiptIdSet();
+  const txs = loadTx();
+  const targets = txs.filter(t => t.source === "shortcut_receipt" && !receiptIdSet.has(t.id));
+
+  const MAX_DIFF_MS = 30 * 60 * 1000; // ±30分以内なら同一レシートとみなす
+  const usedFiles = new Set();
+  let matchedCount = 0, failedCount = 0;
+
+  // 取引作成時刻(id=Date.now())に最も近い写真を割り当てる
+  for (const t of targets) {
+    let best = null, bestDiff = Infinity;
+    for (const c of candidates) {
+      if (usedFiles.has(c.file)) continue;
+      const diff = Math.abs(c.time.getTime() - t.id);
+      if (diff < bestDiff) { bestDiff = diff; best = c; }
+    }
+    if (best && bestDiff <= MAX_DIFF_MS) {
+      try {
+        const blob = await compressImageFile(best.file);
+        await saveReceiptBlob(t.id, blob);
+        usedFiles.add(best.file);
+        receiptIdSet.add(t.id);
+        matchedCount++;
+      } catch { failedCount++; }
+    }
+  }
+
+  renderHome();
+  resultEl.textContent = matchedCount > 0
+    ? `${matchedCount}件の写真を自動で紐付けました${failedCount > 0 ? `（${failedCount}件は失敗）` : ""}${targets.length - matchedCount - failedCount > 0 ? `／一致する写真が見つからなかった取引が${targets.length - matchedCount - failedCount}件あります` : ""}`
+    : "一致する写真が見つかりませんでした（取引と写真の時刻が離れすぎている可能性があります）";
+  showToast(matchedCount > 0 ? `${matchedCount}件のレシート写真を自動反映しました` : "一致する写真が見つかりませんでした");
+}
+
 function openReceiptPicker(txId) {
   receiptPendingTxId = txId;
   document.getElementById("receiptFileInput").value = "";
@@ -2451,6 +2530,15 @@ function finishNewMonthFlow() {
 // 期待するURL形式:
 //   https://thidaka45.github.io/kakeibo/?data=YYYY%2FMM%2FDD%2C店名%2C金額%2Cカテゴリ
 // dataパラメータの中身（デコード後）: "2026/07/02,〇〇スーパー,1280,食費"
+// Base64文字列（data:URI形式でも可）を画像Blobに変換する
+function base64ToImageBlob(base64, mime = "image/jpeg") {
+  const clean = base64.indexOf(",") !== -1 ? base64.split(",")[1] : base64;
+  const binary = atob(clean);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new Blob([bytes], { type: mime });
+}
+
 function receiveFromUrl() {
   const params = new URLSearchParams(location.search);
   const raw = params.get("data");
@@ -2476,23 +2564,42 @@ function receiveFromUrl() {
   const matched = CATS_EXPENSE.find(c => c.label === rawCat);
   const cat = matched ? matched.id : CATS_EXPENSE[0].id;
 
+  const newId = Date.now();
   const txs = loadTx();
   txs.push({
-    id: Date.now(),
+    id: newId,
     type: "expense",
     cat,
     amount,
     memo: store || "",
-    date
+    date,
+    source: "shortcut_receipt"
   });
   saveTx(txs);
 
   if (ensurePeriods().length) viewPeriodIndex = findPeriodIndexForDate(date);
 
+  // 写真データ（photo=Base64）が一緒に渡されていれば、選択操作なしで自動的に紐付ける
+  let photoAttached = false;
+  const photoRaw = params.get("photo");
+  if (photoRaw) {
+    try {
+      const blob = base64ToImageBlob(photoRaw);
+      saveReceiptBlob(newId, blob).then(() => {
+        receiptIdSet.add(newId);
+        renderHome();
+      });
+      photoAttached = true;
+    } catch (e) {
+      // 写真の解析に失敗しても、金額等のテキスト記録は成立させる
+    }
+  }
+
   showToast(
-    matched
+    (matched
       ? `${store} ¥${amount.toLocaleString()} を「${matched.label}」で記録しました`
-      : `${store} ¥${amount.toLocaleString()} を記録しました（カテゴリ「${rawCat}」は未対応のため「${CATS_EXPENSE[0].label}」にしました）`
+      : `${store} ¥${amount.toLocaleString()} を記録しました（カテゴリ「${rawCat}」は未対応のため「${CATS_EXPENSE[0].label}」にしました）`)
+    + (photoAttached ? "／写真も自動で添付しました" : "")
   );
 }
 
