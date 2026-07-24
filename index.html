@@ -585,10 +585,10 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
   <div class="section-title" style="margin-top:4px">レシート写真の一括反映</div>
   <div class="export-section">
     <div style="font-size:16px;color:var(--sub);margin-bottom:8px;line-height:1.6;">
-      Filesアプリの「レシート」フォルダ内、月ごとのフォルダ（例：2026-07）を選ぶと、フォルダ内の写真と各取引を撮影時刻から自動で突き合わせて一括で紐付けます。取引1件ごとに選ぶ必要はありません。月が変わったら、その月のフォルダで再度実行してください。
+      Filesアプリの「レシート」フォルダを丸ごと選ぶだけでOKです。中の月ごとのフォルダ（2026-07、2026-08…）も自動的にすべて辿って読み込み、各取引と撮影時刻を突き合わせて一括で紐付けます。月フォルダを個別に開き直す必要はありません。新しい写真が増えたら、また「レシート」フォルダを選び直して実行してください（前回反映済みの分は自動でスキップされます）。
     </div>
     <button class="export-btn" style="background:var(--amber-l);border-color:var(--amber);color:var(--amber);" onclick="openReceiptFolderPicker()">
-      📂 レシート写真フォルダを選んで一括反映
+      📂 「レシート」フォルダを選んで一括反映
     </button>
     <div id="receiptMatchResult" style="font-size:16px;color:var(--sub);margin-top:8px;line-height:1.6;"></div>
   </div>
@@ -777,7 +777,7 @@ function getBudgetTotal(periodIdx) {
 // ============================================================
 // バージョン情報
 // ============================================================
-const APP_VERSION = "2.18.0"; // ← 更新するたびに番号を上げる
+const APP_VERSION = "2.18.1"; // ← 更新するたびに番号を上げる
 
 // ============================================================
 // ストレージ
