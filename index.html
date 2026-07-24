@@ -209,6 +209,15 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
 .icon-tile.t-utility  .icon-tile-box{background:var(--gray);}
 .icon-tile.t-camera   .icon-tile-box{background:var(--amber);}
 
+/* レシート記録（横長・残高の直下に配置） */
+.receipt-wide-btn{position:relative;overflow:hidden;display:flex;align-items:center;gap:16px;width:100%;padding:16px 20px;border-radius:var(--radius);border:none;background:var(--amber);cursor:pointer;font-family:inherit;box-sizing:border-box;margin-bottom:18px;-webkit-user-select:none;user-select:none;touch-action:manipulation;text-align:left;}
+.receipt-fill{position:absolute;inset:0;width:0%;background:rgba(255,255,255,.35);pointer-events:none;}
+.receipt-icon-box{position:relative;z-index:1;flex-shrink:0;width:56px;height:56px;border-radius:16px;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;}
+.receipt-icon-box svg{width:30px;height:30px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.receipt-text{position:relative;z-index:1;display:flex;flex-direction:column;gap:2px;}
+.receipt-title{font-size:22px;font-weight:700;color:#fff;}
+.receipt-sub{font-size:15px;font-weight:600;color:#fff;opacity:.9;}
+
 /* 画面下部のホームタブ（ランチャー以外の全ページで表示） */
 .home-tab-bar{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);z-index:150;padding:8px 0 calc(8px + env(safe-area-inset-bottom));display:none;}
 .home-tab-bar.show{display:flex;}
@@ -238,24 +247,26 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
     <div class="launcher-widget-month" id="launcherMonth"></div>
   </div>
 
+  <!-- レシート記録（横長・長押しで起動） -->
+  <button id="receiptTile" class="receipt-wide-btn"
+          onpointerdown="startHoldReceipt()" onpointerup="cancelHoldReceipt()"
+          onpointerleave="cancelHoldReceipt()" onpointercancel="cancelHoldReceipt()">
+    <span id="receiptBtnFill" class="receipt-fill"></span>
+    <span class="receipt-icon-box"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
+    <span class="receipt-text">
+      <span class="receipt-title">📷 レシート</span>
+      <span class="receipt-sub">長押しで記録できます</span>
+    </span>
+  </button>
+
   <div class="icon-grid">
-    <button class="icon-tile t-camera" id="receiptTile"
-            onpointerdown="startHoldReceipt()" onpointerup="cancelHoldReceipt()"
-            onpointerleave="cancelHoldReceipt()" onpointercancel="cancelHoldReceipt()"
-            style="-webkit-user-select:none;user-select:none;">
-      <span class="icon-tile-box">
-        <span id="receiptBtnFill" style="position:absolute;inset:0;width:0%;background:rgba(255,255,255,.35);pointer-events:none;"></span>
-        <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
-      </span>
-      <span class="icon-tile-label">レシート</span>
-    </button>
     <button class="icon-tile t-input" onclick="showPage('input')">
       <span class="icon-tile-box"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span>
       <span class="icon-tile-label">入力</span>
     </button>
     <button class="icon-tile t-home" onclick="showPage('home')">
       <span class="icon-tile-box"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/></svg></span>
-      <span class="icon-tile-label">きろく</span>
+      <span class="icon-tile-label">記録</span>
     </button>
     <button class="icon-tile t-graph" onclick="showPage('graph')">
       <span class="icon-tile-box"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
@@ -276,7 +287,7 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
   </div>
 
   <div style="font-size:13px;color:var(--muted);margin-top:16px;line-height:1.6;text-align:center;">
-    「レシート」は長押しで記録できます。「背面タップ」にこのShortcutを割り当てると、ワンタップで記録できます。
+    「背面タップ」にこのShortcutを割り当てると、ワンタップで記録できます。
   </div>
 </div>
 
@@ -728,7 +739,7 @@ function getBudgetTotal(periodIdx) {
 // ============================================================
 // バージョン情報
 // ============================================================
-const APP_VERSION = "2.13.0"; // ← 更新するたびに番号を上げる
+const APP_VERSION = "2.14.0"; // ← 更新するたびに番号を上げる
 
 // ============================================================
 // ストレージ
