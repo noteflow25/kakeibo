@@ -48,7 +48,7 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
 
 /* ナビゲーション（機能ごとに色分けした大きめアイコンタイル） */
 .nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);display:flex;padding:8px 2px calc(8px + env(safe-area-inset-bottom));z-index:100;gap:4px;}
-.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:none;border:none;color:var(--sub);font-size:14px;font-weight:600;cursor:pointer;padding:6px 2px;font-family:inherit;transition:color .2s;min-height:64px;touch-action:manipulation;border-radius:12px;}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:none;border:none;color:var(--sub);font-size:16px;font-weight:600;cursor:pointer;padding:6px 2px;font-family:inherit;transition:color .2s;min-height:64px;touch-action:manipulation;border-radius:12px;}
 .nav-icon-wrap{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:var(--bg);transition:background .15s;}
 .nav-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
 .nav-btn.active{color:var(--text);}
@@ -71,22 +71,22 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
 
 /* ===== ホーム ===== */
 .month-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
-.month-nav{background:none;border:none;font-size:23px;cursor:pointer;color:var(--sub);padding:4px 8px;}
-.month-title{font-size:17px;font-weight:700;color:var(--text);}
+.month-nav{background:none;border:none;font-size:25px;cursor:pointer;color:var(--sub);padding:4px 8px;}
+.month-title{font-size:19px;font-weight:700;color:var(--text);}
 
 /* 残高カード */
 .balance-card{background:var(--green);border-radius:var(--radius);padding:12px 16px 10px;margin-bottom:8px;color:#fff;}
-.balance-label{font-size:15px;opacity:.8;margin-bottom:4px;}
+.balance-label{font-size:17px;opacity:.8;margin-bottom:4px;}
 .balance-amount{font-size:34px;font-weight:700;letter-spacing:-1px;line-height:1;}
 .balance-sub{display:flex;gap:16px;margin-top:6px;}
-.balance-sub-item{font-size:14px;opacity:.85;}
-.balance-sub-item span{display:block;font-size:16px;font-weight:600;margin-top:1px;}
+.balance-sub-item{font-size:16px;opacity:.85;}
+.balance-sub-item span{display:block;font-size:18px;font-weight:600;margin-top:1px;}
 
 /* 予算バー */
 .budget-card{background:var(--card);border-radius:var(--radius);padding:10px 12px;margin-bottom:8px;box-shadow:0 1px 8px rgba(0,0,0,.05);}
 .budget-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
-.budget-label{font-size:16px;font-weight:600;color:var(--text);}
-.budget-nums{font-size:15px;color:var(--sub);}
+.budget-label{font-size:18px;font-weight:600;color:var(--text);}
+.budget-nums{font-size:17px;color:var(--sub);}
 .bar-track{width:100%;height:10px;background:var(--border);border-radius:5px;overflow:hidden;margin-bottom:6px;}
 .bar-fill{height:100%;border-radius:5px;transition:width .8s cubic-bezier(.22,1,.36,1);}
 .bar-ok{background:var(--green);}
@@ -94,40 +94,40 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
 .bar-over{background:var(--red);}
 .budget-cats{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:6px;}
 .cat-row{display:flex;align-items:center;justify-content:space-between;background:var(--bg);border-radius:6px;padding:4px 8px;}
-.cat-name{font-size:13px;color:var(--sub);}
-.cat-val{font-size:13px;font-weight:600;color:var(--text);}
+.cat-name{font-size:15px;color:var(--sub);}
+.cat-val{font-size:15px;font-weight:600;color:var(--text);}
 
 /* 直近取引 */
-.section-title{font-size:15px;font-weight:600;color:var(--sub);margin:6px 0 4px;letter-spacing:.02em;}
+.section-title{font-size:17px;font-weight:600;color:var(--sub);margin:6px 0 4px;letter-spacing:.02em;}
 .tx-list{background:var(--card);border-radius:var(--radius);overflow:hidden;box-shadow:0 1px 8px rgba(0,0,0,.05);}
 #txList{max-height:270px;overflow-y:auto;-webkit-overflow-scrolling:touch;}
 .tx-item{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border);}
 .tx-item:last-child{border-bottom:none;}
-.tx-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.tx-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;}
 .tx-info{flex:1;}
-.tx-name{font-size:15px;font-weight:500;color:var(--text);}
-.tx-date{font-size:13px;color:var(--muted);}
-.tx-amount{font-size:15px;font-weight:700;}
+.tx-name{font-size:17px;font-weight:500;color:var(--text);}
+.tx-date{font-size:15px;color:var(--muted);}
+.tx-amount{font-size:17px;font-weight:700;}
 .tx-amount.income{color:var(--green);}
 .tx-amount.expense{color:var(--red);}
 
 /* ===== 積立/固定費タブ 共通：追加ボタン・削除ボタン ===== */
-.add-item-btn{width:100%;padding:13px;border-radius:var(--radius-s);border:1.5px dashed var(--green);background:none;color:var(--green-d);font-size:17px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:10px;touch-action:manipulation;}
+.add-item-btn{width:100%;padding:13px;border-radius:var(--radius-s);border:1.5px dashed var(--green);background:none;color:var(--green-d);font-size:19px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:10px;touch-action:manipulation;}
 .add-item-btn.blue{border-color:var(--blue);color:var(--blue);}
 .add-item-btn:active{opacity:.7;}
-.delete-x{background:none;border:none;color:var(--muted);font-size:19px;line-height:1;cursor:pointer;padding:8px 6px 8px 12px;touch-action:manipulation;}
+.delete-x{background:none;border:none;color:var(--muted);font-size:21px;line-height:1;cursor:pointer;padding:8px 6px 8px 12px;touch-action:manipulation;}
 
 /* ===== カテゴリ絵文字バッジ＋選択シート（入力/積立/固定費 共通） ===== */
-.cat-emoji-btn{width:40px;height:40px;border-radius:12px;border:1.5px solid var(--border);background:var(--bg);font-size:23px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;padding:0;touch-action:manipulation;}
+.cat-emoji-btn{width:40px;height:40px;border-radius:12px;border:1.5px solid var(--border);background:var(--bg);font-size:25px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;padding:0;touch-action:manipulation;}
 .cat-picker-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:300;display:flex;align-items:flex-end;}
 .cat-picker-sheet{background:#fff;border-radius:18px 18px 0 0;width:100%;max-height:65vh;overflow-y:auto;padding:10px 0 calc(10px + env(safe-area-inset-bottom));}
-.cat-picker-title{font-size:15px;font-weight:600;color:var(--sub);padding:6px 20px 10px;}
+.cat-picker-title{font-size:17px;font-weight:600;color:var(--sub);padding:6px 20px 10px;}
 .cat-picker-row{display:flex;align-items:center;gap:14px;padding:13px 20px;cursor:pointer;touch-action:manipulation;}
 .cat-picker-row:active{background:var(--bg);}
 .cat-picker-row.selected{background:var(--green-l);}
 .cat-picker-emoji{font-size:25px;width:28px;text-align:center;flex-shrink:0;}
-.cat-picker-label{font-size:17px;color:var(--text);}
-.fc-check{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;color:transparent;cursor:pointer;flex-shrink:0;padding:0;touch-action:manipulation;transition:all .15s;}
+.cat-picker-label{font-size:19px;color:var(--text);}
+.fc-check{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:700;color:transparent;cursor:pointer;flex-shrink:0;padding:0;touch-action:manipulation;transition:all .15s;}
 .fc-check.checked{background:var(--green);border-color:var(--green);color:#fff;}
 .fc-item-paid .tx-name{color:var(--muted);text-decoration:line-through;}
 .fc-item-paid .tx-date{color:var(--muted);}
@@ -139,67 +139,67 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
 .goal-item:last-child{border-bottom:none;}
 .goal-top{display:flex;align-items:center;gap:10px;}
 .goal-right{text-align:right;flex-shrink:0;}
-.goal-monthly{font-size:16px;font-weight:700;color:var(--green-d);}
-.goal-monthly span{font-size:12px;color:var(--muted);font-weight:400;}
-.goal-status{font-size:13px;color:var(--muted);margin-top:1px;}
+.goal-monthly{font-size:18px;font-weight:700;color:var(--green-d);}
+.goal-monthly span{font-size:14px;color:var(--muted);font-weight:400;}
+.goal-status{font-size:15px;color:var(--muted);margin-top:1px;}
 
 /* ===== 入力 ===== */
 .type-toggle{display:flex;background:var(--border);border-radius:var(--radius-s);padding:3px;margin-bottom:6px;}
-.type-btn{flex:1;padding:6px;border-radius:8px;border:none;font-size:16px;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit;background:none;color:var(--sub);}
+.type-btn{flex:1;padding:6px;border-radius:8px;border:none;font-size:18px;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit;background:none;color:var(--sub);}
 .type-btn.active-expense{background:var(--card);color:var(--red);}
 .type-btn.active-income{background:var(--card);color:var(--green);}
 .input-card{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:0 1px 8px rgba(0,0,0,.05);margin-bottom:12px;}
 .amount-display{font-size:40px;font-weight:700;color:var(--text);text-align:center;padding:12px 0;border-bottom:2px solid var(--border);margin-bottom:14px;letter-spacing:-1px;min-height:60px;}
 .field-row{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;}
-.field-label{font-size:15px;color:var(--sub);}
-.field-input,.field-select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-s);font-size:17px;font-family:inherit;color:var(--text);background:var(--bg);outline:none;}
+.field-label{font-size:17px;color:var(--sub);}
+.field-input,.field-select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-s);font-size:19px;font-family:inherit;color:var(--text);background:var(--bg);outline:none;}
 .field-input:focus,.field-select:focus{border-color:var(--green);}
 .cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:4px;align-content:start;}
-.cat-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 4px;border-radius:var(--radius-s);border:1.5px solid var(--border);background:none;cursor:pointer;font-size:13px;color:var(--sub);font-family:inherit;transition:all .2s;touch-action:manipulation;}
-.cat-btn .cat-emoji{font-size:19px;}
+.cat-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 4px;border-radius:var(--radius-s);border:1.5px solid var(--border);background:none;cursor:pointer;font-size:15px;color:var(--sub);font-family:inherit;transition:all .2s;touch-action:manipulation;}
+.cat-btn .cat-emoji{font-size:21px;}
 .cat-btn.selected{border-color:var(--green);background:var(--green-l);color:var(--green-d);}
-.submit-btn{width:100%;padding:14px;border-radius:var(--radius-s);border:none;font-size:19px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .2s;color:#fff;}
+.submit-btn{width:100%;padding:14px;border-radius:var(--radius-s);border:none;font-size:21px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .2s;color:#fff;}
 .submit-btn.expense{background:var(--red);}
 .submit-btn.income{background:var(--green);}
 .submit-btn:active{opacity:.8;}
 
 /* ===== グラフ ===== */
 .graph-card{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:0 1px 8px rgba(0,0,0,.05);margin-bottom:12px;}
-.graph-title{font-size:17px;font-weight:600;color:var(--text);margin-bottom:14px;}
+.graph-title{font-size:19px;font-weight:600;color:var(--text);margin-bottom:14px;}
 .bar-chart{display:flex;align-items:flex-end;gap:6px;height:140px;margin-bottom:8px;}
 .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
 .bar-wrap{flex:1;width:100%;display:flex;flex-direction:column;justify-content:flex-end;gap:2px;}
 .bar-exp{border-radius:4px 4px 0 0;background:var(--red);transition:height .6s cubic-bezier(.22,1,.36,1);}
 .bar-inc{border-radius:4px 4px 0 0;background:var(--green);opacity:.6;}
-.bar-col-label{font-size:13px;color:var(--muted);}
+.bar-col-label{font-size:15px;color:var(--muted);}
 .legend{display:flex;gap:14px;margin-top:4px;}
-.legend-item{display:flex;align-items:center;gap:5px;font-size:14px;color:var(--sub);}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:16px;color:var(--sub);}
 .legend-dot{width:10px;height:10px;border-radius:2px;}
 .cat-summary{display:flex;flex-direction:column;gap:6px;}
 .cat-summary-row{display:flex;align-items:center;gap:8px;}
-.cat-summary-name{font-size:15px;color:var(--sub);width:60px;flex-shrink:0;}
+.cat-summary-name{font-size:17px;color:var(--sub);width:60px;flex-shrink:0;}
 .cat-summary-bar-track{flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden;}
 .cat-summary-bar-fill{height:100%;border-radius:4px;background:var(--red);transition:width .6s;}
-.cat-summary-val{font-size:15px;font-weight:600;color:var(--text);width:60px;text-align:right;}
+.cat-summary-val{font-size:17px;font-weight:600;color:var(--text);width:60px;text-align:right;}
 
 
 /* エクスポートボタン */
-.export-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:8px;border-radius:var(--radius-s);border:1.5px solid var(--green);background:var(--green-l);color:var(--green-d);font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .2s;margin-top:6px;}
+.export-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:8px;border-radius:var(--radius-s);border:1.5px solid var(--green);background:var(--green-l);color:var(--green-d);font-size:17px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .2s;margin-top:6px;}
 .export-btn:active{opacity:.7;}
 .export-section{background:var(--card);border-radius:var(--radius);padding:10px 12px;box-shadow:0 1px 8px rgba(0,0,0,.05);margin-top:8px;}
-.export-title{font-size:16px;font-weight:600;color:var(--sub);margin-bottom:10px;}
-.export-note{font-size:14px;color:var(--muted);margin-top:8px;line-height:1.6;}
+.export-title{font-size:18px;font-weight:600;color:var(--sub);margin-bottom:10px;}
+.export-note{font-size:16px;color:var(--muted);margin-top:8px;line-height:1.6;}
 
 /* ===== ランチャー（アイコングリッドのホーム画面） ===== */
 .launcher-widget{background:var(--green);border-radius:var(--radius);padding:16px 18px;margin-bottom:18px;color:#fff;}
-.launcher-widget-label{font-size:14px;opacity:.85;margin-bottom:2px;}
-.launcher-widget-month{font-size:14px;opacity:.85;}
+.launcher-widget-label{font-size:16px;opacity:.85;margin-bottom:2px;}
+.launcher-widget-month{font-size:16px;opacity:.85;}
 .launcher-widget-amount{font-size:44px;font-weight:700;letter-spacing:-1px;}
 .icon-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
 .icon-tile{display:flex;flex-direction:column;align-items:center;gap:8px;background:none;border:none;cursor:pointer;font-family:inherit;padding:0;touch-action:manipulation;}
 .icon-tile-box{width:100%;aspect-ratio:1;border-radius:22px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(0,0,0,.14);position:relative;overflow:hidden;}
 .icon-tile-box svg{width:44%;height:44%;stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;position:relative;z-index:1;}
-.icon-tile-label{font-size:16px;font-weight:700;color:var(--text);}
+.icon-tile-label{font-size:18px;font-weight:700;color:var(--text);}
 .icon-tile:active .icon-tile-box{transform:scale(.94);}
 .icon-tile.t-home     .icon-tile-box{background:var(--green);}
 .icon-tile.t-input    .icon-tile-box{background:var(--orange);}
@@ -215,13 +215,13 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
 .receipt-icon-box{position:relative;z-index:1;flex-shrink:0;width:56px;height:56px;border-radius:16px;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;}
 .receipt-icon-box svg{width:30px;height:30px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
 .receipt-text{position:relative;z-index:1;display:flex;flex-direction:column;gap:2px;}
-.receipt-title{font-size:22px;font-weight:700;color:#fff;}
-.receipt-sub{font-size:15px;font-weight:600;color:#fff;opacity:.9;}
+.receipt-title{font-size:24px;font-weight:700;color:#fff;}
+.receipt-sub{font-size:17px;font-weight:600;color:#fff;opacity:.9;}
 
 /* 画面下部のホームタブ（ランチャー以外の全ページで表示） */
 .home-tab-bar{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);z-index:150;padding:8px 0 calc(8px + env(safe-area-inset-bottom));display:none;}
 .home-tab-bar.show{display:flex;}
-.home-tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:none;border:none;color:var(--green-d);font-size:14px;font-weight:700;cursor:pointer;padding:6px 2px;font-family:inherit;min-height:60px;touch-action:manipulation;}
+.home-tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:none;border:none;color:var(--green-d);font-size:16px;font-weight:700;cursor:pointer;padding:6px 2px;font-family:inherit;min-height:60px;touch-action:manipulation;}
 .home-tab-icon{width:38px;height:38px;border-radius:11px;background:var(--green);display:flex;align-items:center;justify-content:center;}
 .home-tab-icon svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
 
@@ -230,7 +230,7 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
 .page.active>*{animation:fadeUp .3s ease both;}
 
 /* トースト */
-.toast{position:fixed;top:60px;left:50%;transform:translateX(-50%) translateY(-20px);background:var(--text);color:#fff;padding:10px 20px;border-radius:20px;font-size:16px;opacity:0;transition:all .3s;pointer-events:none;z-index:200;white-space:nowrap;}
+.toast{position:fixed;top:60px;left:50%;transform:translateX(-50%) translateY(-20px);background:var(--text);color:#fff;padding:10px 20px;border-radius:20px;font-size:18px;opacity:0;transition:all .3s;pointer-events:none;z-index:200;white-space:nowrap;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 </style>
 </head>
@@ -254,7 +254,7 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
     <span id="receiptBtnFill" class="receipt-fill"></span>
     <span class="receipt-icon-box"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
     <span class="receipt-text">
-      <span class="receipt-title">📷 レシート</span>
+      <span class="receipt-title">レシート</span>
       <span class="receipt-sub">長押しで記録できます</span>
     </span>
   </button>
@@ -285,10 +285,6 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
       <span class="icon-tile-label">その他</span>
     </button>
   </div>
-
-  <div style="font-size:13px;color:var(--muted);margin-top:16px;line-height:1.6;text-align:center;">
-    「背面タップ」にこのShortcutを割り当てると、ワンタップで記録できます。
-  </div>
 </div>
 
 
@@ -297,17 +293,17 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
   <div class="month-header">
     <button class="month-nav" data-dir="-1" onclick="changePeriod(-1)">‹</button>
     <span class="month-title" id="monthTitle"></span>
-    <button id="editPeriodStartBtn" onclick="openEditPeriodStart()" style="display:none;background:none;border:none;color:var(--sub);font-size:16px;cursor:pointer;padding:2px 6px;">✏️</button>
+    <button id="editPeriodStartBtn" onclick="openEditPeriodStart()" style="display:none;background:none;border:none;color:var(--sub);font-size:18px;cursor:pointer;padding:2px 6px;">✏️</button>
     <button class="month-nav" data-dir="1" onclick="changePeriod(1)">›</button>
   </div>
 
   <!-- 開始日編集フォーム（進行中の月度のみ表示） -->
   <div id="editPeriodStartForm" style="display:none;background:var(--card);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px;box-shadow:0 1px 8px rgba(0,0,0,.05);">
-    <div style="font-size:15px;color:var(--sub);margin-bottom:8px;">この月度の開始日を変更</div>
+    <div style="font-size:17px;color:var(--sub);margin-bottom:8px;">この月度の開始日を変更</div>
     <div style="display:flex;gap:6px;align-items:center;">
-      <input class="field-input" id="editPeriodStartInput" type="date" style="flex:1;padding:8px 10px;font-size:17px;">
-      <button onclick="saveEditPeriodStart()" style="padding:8px 14px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;">保存</button>
-      <button onclick="closeEditPeriodStart()" style="padding:8px 10px;border-radius:8px;border:0.5px solid var(--border);background:transparent;font-size:15px;cursor:pointer;font-family:inherit;color:var(--sub);">×</button>
+      <input class="field-input" id="editPeriodStartInput" type="date" style="flex:1;padding:8px 10px;font-size:19px;">
+      <button onclick="saveEditPeriodStart()" style="padding:8px 14px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:17px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;">保存</button>
+      <button onclick="closeEditPeriodStart()" style="padding:8px 10px;border-radius:8px;border:0.5px solid var(--border);background:transparent;font-size:17px;cursor:pointer;font-family:inherit;color:var(--sub);">×</button>
     </div>
   </div>
   <div class="balance-card">
@@ -321,10 +317,10 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
         </div>
       </div>
       <div style="text-align:right;flex-shrink:0;padding-top:2px;">
-        <div style="font-size:13px;opacity:.8;">積立合計</div>
-        <div id="homeSavingsTotal" style="font-size:17px;font-weight:700;margin-bottom:6px;white-space:nowrap;">¥0</div>
-        <div style="font-size:13px;opacity:.8;">固定合計</div>
-        <div id="homeFixedTotal" style="font-size:17px;font-weight:700;white-space:nowrap;">¥0</div>
+        <div style="font-size:15px;opacity:.8;">積立合計</div>
+        <div id="homeSavingsTotal" style="font-size:19px;font-weight:700;margin-bottom:6px;white-space:nowrap;">¥0</div>
+        <div style="font-size:15px;opacity:.8;">固定合計</div>
+        <div id="homeFixedTotal" style="font-size:19px;font-weight:700;white-space:nowrap;">¥0</div>
       </div>
     </div>
   </div>
@@ -338,9 +334,9 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
     <div class="bar-track"><div class="bar-fill bar-ok" id="budgetBar" style="width:0%"></div></div>
     <!-- 健全状況 -->
     <div id="budgetStatus" style="display:flex;align-items:center;gap:6px;margin-top:6px;">
-      <span id="budgetStatusIcon" style="font-size:19px;"></span>
-      <span id="budgetStatusText" style="font-size:15px;font-weight:600;"></span>
-      <span id="budgetStatusSub" style="font-size:14px;color:var(--sub);margin-left:auto;"></span>
+      <span id="budgetStatusIcon" style="font-size:21px;"></span>
+      <span id="budgetStatusText" style="font-size:17px;font-weight:600;"></span>
+      <span id="budgetStatusSub" style="font-size:16px;color:var(--sub);margin-left:auto;"></span>
     </div>
   </div>
 
@@ -351,8 +347,8 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
   <!-- 取引 編集・削除フォーム（一覧の項目をタップすると表示） -->
   <div id="txEditForm" style="display:none;background:var(--card);border-radius:var(--radius);padding:14px;box-shadow:0 1px 8px rgba(0,0,0,.05);margin-top:10px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-      <div style="font-size:17px;font-weight:600;color:var(--text);">取引を編集</div>
-      <button onclick="closeTxEditForm()" style="background:none;border:none;color:var(--muted);font-size:23px;line-height:1;cursor:pointer;padding:0 0 0 10px;">×</button>
+      <div style="font-size:19px;font-weight:600;color:var(--text);">取引を編集</div>
+      <button onclick="closeTxEditForm()" style="background:none;border:none;color:var(--muted);font-size:25px;line-height:1;cursor:pointer;padding:0 0 0 10px;">×</button>
     </div>
 
     <div class="type-toggle" style="margin-bottom:10px;">
@@ -361,7 +357,7 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
     </div>
 
     <div style="margin-bottom:8px;">
-      <input class="field-input" id="txEditAmount" type="number" inputmode="numeric" placeholder="金額（円）" style="width:100%;padding:8px 10px;font-size:18px;">
+      <input class="field-input" id="txEditAmount" type="number" inputmode="numeric" placeholder="金額（円）" style="width:100%;padding:8px 10px;font-size:20px;">
     </div>
 
     <div style="margin-bottom:8px;">
@@ -369,16 +365,16 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
     </div>
 
     <div style="margin-bottom:8px;">
-      <input class="field-input" id="txEditDate" type="date" style="width:100%;padding:8px 10px;font-size:17px;">
+      <input class="field-input" id="txEditDate" type="date" style="width:100%;padding:8px 10px;font-size:19px;">
     </div>
 
     <div style="margin-bottom:10px;">
-      <textarea class="field-input" id="txEditMemo" placeholder="メモ（任意）" style="width:100%;padding:8px 10px;font-size:16px;resize:none;height:44px;"></textarea>
+      <textarea class="field-input" id="txEditMemo" placeholder="メモ（任意）" style="width:100%;padding:8px 10px;font-size:18px;resize:none;height:44px;"></textarea>
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-      <button onclick="deleteTxEdit()" style="padding:10px;border-radius:8px;border:0.5px solid var(--red);background:var(--red-l);font-size:16px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--red);">削除</button>
-      <button onclick="saveTxEdit()" style="padding:10px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:16px;font-weight:600;cursor:pointer;font-family:inherit;">更新</button>
+      <button onclick="deleteTxEdit()" style="padding:10px;border-radius:8px;border:0.5px solid var(--red);background:var(--red-l);font-size:18px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--red);">削除</button>
+      <button onclick="saveTxEdit()" style="padding:10px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:18px;font-weight:600;cursor:pointer;font-family:inherit;">更新</button>
     </div>
   </div>
 
@@ -397,12 +393,12 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
     <div class="amount-display" id="amountDisplay" style="font-size:32px;padding:6px 0;min-height:44px;">¥0</div>
     <!-- 日付（カレンダー選択） -->
     <div style="margin-bottom:6px;">
-      <input class="field-input" id="dateInput" type="date" style="padding:6px 10px;font-size:20px;font-weight:700;width:100%;cursor:pointer;">
+      <input class="field-input" id="dateInput" type="date" style="padding:6px 10px;font-size:22px;font-weight:700;width:100%;cursor:pointer;">
     </div>
     <!-- メモ＋カテゴリ（入力内容から自動判別。絵文字をタップすると手動で選べる） -->
     <div style="margin-bottom:6px;display:flex;gap:6px;align-items:center;">
       <textarea class="field-input" id="memoInput" placeholder="メモ（入力するとカテゴリを自動判別）" oninput="handleMemoInput()"
-        style="flex:1;padding:6px 10px;font-size:15px;height:56px;resize:none;line-height:1.5;font-family:inherit;"></textarea>
+        style="flex:1;padding:6px 10px;font-size:17px;height:56px;resize:none;line-height:1.5;font-family:inherit;"></textarea>
       <button type="button" id="catEmojiBtn" class="cat-emoji-btn" onclick="toggleCatPicker()">🛒</button>
     </div>
     <!-- 記録ボタン -->
@@ -417,18 +413,18 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
   <!-- テンキー -->
   <div class="input-card" style="padding:8px;">
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;">
-      <button class="cat-btn" style="border:none;background:var(--bg);font-size:21px;font-weight:500;padding:10px;" onclick="inputNum('1')">1</button>
-      <button class="cat-btn" style="border:none;background:var(--bg);font-size:21px;font-weight:500;padding:10px;" onclick="inputNum('2')">2</button>
-      <button class="cat-btn" style="border:none;background:var(--bg);font-size:21px;font-weight:500;padding:10px;" onclick="inputNum('3')">3</button>
-      <button class="cat-btn" style="border:none;background:var(--bg);font-size:21px;font-weight:500;padding:10px;" onclick="inputNum('4')">4</button>
-      <button class="cat-btn" style="border:none;background:var(--bg);font-size:21px;font-weight:500;padding:10px;" onclick="inputNum('5')">5</button>
-      <button class="cat-btn" style="border:none;background:var(--bg);font-size:21px;font-weight:500;padding:10px;" onclick="inputNum('6')">6</button>
-      <button class="cat-btn" style="border:none;background:var(--bg);font-size:21px;font-weight:500;padding:10px;" onclick="inputNum('7')">7</button>
-      <button class="cat-btn" style="border:none;background:var(--bg);font-size:21px;font-weight:500;padding:10px;" onclick="inputNum('8')">8</button>
-      <button class="cat-btn" style="border:none;background:var(--bg);font-size:21px;font-weight:500;padding:10px;" onclick="inputNum('9')">9</button>
-      <button class="cat-btn" style="border:none;background:var(--bg);font-size:21px;padding:10px;" onclick="inputNum('000')">000</button>
-      <button class="cat-btn" style="border:none;background:var(--bg);font-size:21px;font-weight:500;padding:10px;" onclick="inputNum('0')">0</button>
-      <button class="cat-btn" style="border:none;background:var(--red-l);font-size:21px;color:var(--red);padding:10px;" onclick="inputNum('del')">⌫</button>
+      <button class="cat-btn" style="border:none;background:var(--bg);font-size:23px;font-weight:500;padding:10px;" onclick="inputNum('1')">1</button>
+      <button class="cat-btn" style="border:none;background:var(--bg);font-size:23px;font-weight:500;padding:10px;" onclick="inputNum('2')">2</button>
+      <button class="cat-btn" style="border:none;background:var(--bg);font-size:23px;font-weight:500;padding:10px;" onclick="inputNum('3')">3</button>
+      <button class="cat-btn" style="border:none;background:var(--bg);font-size:23px;font-weight:500;padding:10px;" onclick="inputNum('4')">4</button>
+      <button class="cat-btn" style="border:none;background:var(--bg);font-size:23px;font-weight:500;padding:10px;" onclick="inputNum('5')">5</button>
+      <button class="cat-btn" style="border:none;background:var(--bg);font-size:23px;font-weight:500;padding:10px;" onclick="inputNum('6')">6</button>
+      <button class="cat-btn" style="border:none;background:var(--bg);font-size:23px;font-weight:500;padding:10px;" onclick="inputNum('7')">7</button>
+      <button class="cat-btn" style="border:none;background:var(--bg);font-size:23px;font-weight:500;padding:10px;" onclick="inputNum('8')">8</button>
+      <button class="cat-btn" style="border:none;background:var(--bg);font-size:23px;font-weight:500;padding:10px;" onclick="inputNum('9')">9</button>
+      <button class="cat-btn" style="border:none;background:var(--bg);font-size:23px;padding:10px;" onclick="inputNum('000')">000</button>
+      <button class="cat-btn" style="border:none;background:var(--bg);font-size:23px;font-weight:500;padding:10px;" onclick="inputNum('0')">0</button>
+      <button class="cat-btn" style="border:none;background:var(--red-l);font-size:23px;color:var(--red);padding:10px;" onclick="inputNum('del')">⌫</button>
     </div>
   </div>
 </div>
@@ -465,8 +461,8 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
 
   <!-- 「新しい月を開始」フロー中の案内バナー -->
   <div id="flowNextToFixed" style="display:none;background:var(--blue-l);border-radius:var(--radius-s);padding:10px 12px;margin-bottom:10px;">
-    <div style="font-size:15px;color:var(--blue);margin-bottom:6px;">積立プランを確認したら、次は固定費の確認に進みましょう。</div>
-    <button onclick="proceedFlowToFixedCosts()" style="width:100%;padding:8px;border-radius:8px;border:none;background:var(--blue);color:#fff;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;">次へ：固定費の確認 →</button>
+    <div style="font-size:17px;color:var(--blue);margin-bottom:6px;">積立プランを確認したら、次は固定費の確認に進みましょう。</div>
+    <button onclick="proceedFlowToFixedCosts()" style="width:100%;padding:8px;border-radius:8px;border:none;background:var(--blue);color:#fff;font-size:17px;font-weight:600;cursor:pointer;font-family:inherit;">次へ：固定費の確認 →</button>
   </div>
 
   <!-- ヒーローカード：積立残高合計 -->
@@ -489,7 +485,7 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
   </div>
 
   <!-- 警告エリア -->
-  <div id="savingsAlert" style="display:none;background:var(--amber-l);border:0.5px solid var(--amber);border-radius:var(--radius);padding:10px 12px;margin-bottom:10px;font-size:15px;color:var(--amber);"></div>
+  <div id="savingsAlert" style="display:none;background:var(--amber-l);border:0.5px solid var(--amber);border-radius:var(--radius);padding:10px 12px;margin-bottom:10px;font-size:17px;color:var(--amber);"></div>
 
   <!-- プランリストの見出し -->
   <div class="section-title" style="margin-top:4px;margin-bottom:2px;">積立プラン</div>
@@ -503,43 +499,43 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
   <!-- 入力フォーム（モーダル風） -->
   <div id="savingsForm" style="display:none;background:var(--card);border-radius:var(--radius);padding:14px;box-shadow:0 1px 8px rgba(0,0,0,.05);margin-top:10px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-      <div style="font-size:17px;font-weight:600;color:var(--text);" id="savingsFormTitle">新しい積立プラン</div>
-      <button onclick="closeSavingsForm()" style="background:none;border:none;color:var(--muted);font-size:23px;line-height:1;cursor:pointer;padding:0 0 0 10px;">×</button>
+      <div style="font-size:19px;font-weight:600;color:var(--text);" id="savingsFormTitle">新しい積立プラン</div>
+      <button onclick="closeSavingsForm()" style="background:none;border:none;color:var(--muted);font-size:25px;line-height:1;cursor:pointer;padding:0 0 0 10px;">×</button>
     </div>
 
     <!-- 目的名＋カテゴリ（入力内容から自動判別。絵文字をタップすると手動で選べる） -->
     <div style="margin-bottom:8px;display:flex;gap:6px;align-items:center;">
-      <input class="field-input" id="savingsName" type="text" placeholder="目的名（例: 車検費用・入力で自動判別）" oninput="handleSavingsNameInput()" style="flex:1;padding:8px 10px;font-size:16px;">
+      <input class="field-input" id="savingsName" type="text" placeholder="目的名（例: 車検費用・入力で自動判別）" oninput="handleSavingsNameInput()" style="flex:1;padding:8px 10px;font-size:18px;">
       <button type="button" id="savingsCatEmojiBtn" class="cat-emoji-btn" onclick="toggleSavingsCatPicker()">📦</button>
     </div>
 
     <!-- 必要金額 -->
     <div style="margin-bottom:8px;">
-      <input class="field-input" id="savingsAmount" type="number" placeholder="必要金額（円）" style="width:100%;padding:8px 10px;font-size:16px;" inputmode="numeric">
+      <input class="field-input" id="savingsAmount" type="number" placeholder="必要金額（円）" style="width:100%;padding:8px 10px;font-size:18px;" inputmode="numeric">
     </div>
 
     <!-- 必要年月 -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;">
-      <select class="field-select" id="savingsYear" style="padding:8px 10px;font-size:16px;"></select>
-      <select class="field-select" id="savingsMonth" style="padding:8px 10px;font-size:16px;"></select>
+      <select class="field-select" id="savingsYear" style="padding:8px 10px;font-size:18px;"></select>
+      <select class="field-select" id="savingsMonth" style="padding:8px 10px;font-size:18px;"></select>
     </div>
 
     <!-- 現在の積立額 -->
     <div style="margin-bottom:10px;">
-      <input class="field-input" id="savingsBalance" type="number" placeholder="現在の積立残高（円・任意）" style="width:100%;padding:8px 10px;font-size:16px;" inputmode="numeric">
+      <input class="field-input" id="savingsBalance" type="number" placeholder="現在の積立残高（円・任意）" style="width:100%;padding:8px 10px;font-size:18px;" inputmode="numeric">
     </div>
 
     <!-- 逆算結果 -->
     <div id="savingsCalc" style="background:var(--green-l);border-radius:8px;padding:10px 12px;margin-bottom:10px;display:none;">
-      <div style="font-size:14px;color:var(--green-d);margin-bottom:2px;">月々の積立額（逆算）</div>
-      <div style="font-size:23px;font-weight:700;color:var(--green-d);" id="savingsCalcAmt">¥0</div>
-      <div style="font-size:14px;color:var(--green-d);margin-top:2px;" id="savingsCalcDetail"></div>
+      <div style="font-size:16px;color:var(--green-d);margin-bottom:2px;">月々の積立額（逆算）</div>
+      <div style="font-size:25px;font-weight:700;color:var(--green-d);" id="savingsCalcAmt">¥0</div>
+      <div style="font-size:16px;color:var(--green-d);margin-top:2px;" id="savingsCalcDetail"></div>
     </div>
 
     <!-- ボタン -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-      <button onclick="closeSavingsForm()" style="padding:10px;border-radius:8px;border:0.5px solid var(--border);background:transparent;font-size:16px;cursor:pointer;font-family:inherit;color:var(--sub);">キャンセル</button>
-      <button onclick="saveSavingsPlan()" style="padding:10px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:16px;font-weight:600;cursor:pointer;font-family:inherit;" id="savingsSubmitBtn">保存</button>
+      <button onclick="closeSavingsForm()" style="padding:10px;border-radius:8px;border:0.5px solid var(--border);background:transparent;font-size:18px;cursor:pointer;font-family:inherit;color:var(--sub);">キャンセル</button>
+      <button onclick="saveSavingsPlan()" style="padding:10px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:18px;font-weight:600;cursor:pointer;font-family:inherit;" id="savingsSubmitBtn">保存</button>
     </div>
   </div>
 
@@ -548,7 +544,7 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
     <div class="cat-picker-sheet" id="savingsCatPickerSheet"></div>
   </div>
 
-  <div style="font-size:14px;color:var(--muted);line-height:1.7;padding:4px 2px;">
+  <div style="font-size:16px;color:var(--muted);line-height:1.7;padding:4px 2px;">
     ここで登録した積立プランは月をまたいでも消えません。「新しい月を開始」の際に、月々の積立額が自動的に積み立てられ（残高に加算され）、月初確保の支出として計上されます。目標金額に到達したプランは、その翌月から積立が止まり、一覧からも自動的に削除されます。
   </div>
 </div>
@@ -557,7 +553,7 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
 <div class="page" id="page-utility">
   <div class="section-title" style="margin-top:4px">データのバックアップ</div>
   <div class="export-section">
-    <div style="font-size:14px;color:var(--sub);margin-bottom:8px;line-height:1.6;">
+    <div style="font-size:16px;color:var(--sub);margin-bottom:8px;line-height:1.6;">
       取引データをCSV形式で書き出します。Excelやスプレッドシートで開いて確認・保管できます。
     </div>
     <button class="export-btn" onclick="exportCSV('month')">
@@ -572,7 +568,7 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
 
   <div class="section-title" style="margin-top:18px">月次の切り替え</div>
   <div class="export-section">
-    <div style="font-size:14px;color:var(--sub);margin-bottom:8px;line-height:1.6;">
+    <div style="font-size:16px;color:var(--sub);margin-bottom:8px;line-height:1.6;">
       固定費・積立の今月分を「使えないお金」として確保し、家計簿の残高を0円からスタートさせます。月の変わり目や給料日など、区切りのタイミングで実行してください。データが大きく変わるため、実行前に上のCSV保存でバックアップしておくと安心です。誤操作防止のため、ボタンは1.2秒の長押しで実行されます。
     </div>
     <button id="newMonthBtn" class="export-btn"
@@ -585,18 +581,18 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
 
     <!-- 長押し後に表示される開始日確認フォーム -->
     <div id="newMonthForm" style="display:none;background:var(--bg);border-radius:var(--radius-s);padding:12px;margin-top:10px;">
-      <div style="font-size:14px;color:var(--sub);margin-bottom:8px;line-height:1.6;">
+      <div style="font-size:16px;color:var(--sub);margin-bottom:8px;line-height:1.6;">
         開始日を確認してください。今日以外の日から始める場合や、あとで気づいた場合はここで変更できます。
       </div>
-      <input class="field-input" id="newMonthDateInput" type="date" style="width:100%;padding:8px 10px;font-size:17px;margin-bottom:10px;">
+      <input class="field-input" id="newMonthDateInput" type="date" style="width:100%;padding:8px 10px;font-size:19px;margin-bottom:10px;">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-        <button onclick="closeNewMonthForm()" style="padding:10px;border-radius:8px;border:0.5px solid var(--border);background:transparent;font-size:16px;cursor:pointer;font-family:inherit;color:var(--sub);">キャンセル</button>
-        <button onclick="confirmStartNewMonth()" style="padding:10px;border-radius:8px;border:none;background:var(--amber);color:#fff;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;">この日付で開始</button>
+        <button onclick="closeNewMonthForm()" style="padding:10px;border-radius:8px;border:0.5px solid var(--border);background:transparent;font-size:18px;cursor:pointer;font-family:inherit;color:var(--sub);">キャンセル</button>
+        <button onclick="confirmStartNewMonth()" style="padding:10px;border-radius:8px;border:none;background:var(--amber);color:#fff;font-size:18px;font-weight:700;cursor:pointer;font-family:inherit;">この日付で開始</button>
       </div>
     </div>
   </div>
 
-  <div style="text-align:right;font-size:12px;color:var(--muted);opacity:0.7;margin-top:14px;font-variant-numeric:tabular-nums;">
+  <div style="text-align:right;font-size:14px;color:var(--muted);opacity:0.7;margin-top:14px;font-variant-numeric:tabular-nums;">
     v<span id="versionText"></span>
   </div>
 </div>
@@ -607,8 +603,8 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
 
   <!-- 「新しい月を開始」フロー中の案内バナー -->
   <div id="flowFinish" style="display:none;background:var(--green-l);border-radius:var(--radius-s);padding:10px 12px;margin-bottom:10px;">
-    <div style="font-size:15px;color:var(--green-d);margin-bottom:6px;">固定費を確認したら、この月度の準備は完了です。</div>
-    <button onclick="finishNewMonthFlow()" style="width:100%;padding:8px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;">完了してホームへ →</button>
+    <div style="font-size:17px;color:var(--green-d);margin-bottom:6px;">固定費を確認したら、この月度の準備は完了です。</div>
+    <button onclick="finishNewMonthFlow()" style="width:100%;padding:8px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:17px;font-weight:600;cursor:pointer;font-family:inherit;">完了してホームへ →</button>
   </div>
 
   <!-- ヒーローカード：固定費 今月合計 -->
@@ -631,23 +627,23 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
 
   <!-- 固定費 登録・編集フォーム -->
   <div id="fixedCostForm" style="display:none;background:var(--card);border-radius:var(--radius);padding:14px;box-shadow:0 1px 8px rgba(0,0,0,.05);margin-bottom:14px;">
-    <div style="font-size:17px;font-weight:600;color:var(--text);margin-bottom:12px;" id="fcFormTitle">新しい固定費</div>
+    <div style="font-size:19px;font-weight:600;color:var(--text);margin-bottom:12px;" id="fcFormTitle">新しい固定費</div>
 
     <!-- 項目名＋カテゴリ（入力内容から自動判別。絵文字をタップすると手動で選べる） -->
     <div style="margin-bottom:8px;display:flex;gap:6px;align-items:center;">
-      <input class="field-input" id="fcName" type="text" placeholder="項目名（空欄ならカテゴリ名を使用・入力で自動判別）" oninput="handleFcNameInput()" style="flex:1;padding:8px 10px;font-size:16px;">
+      <input class="field-input" id="fcName" type="text" placeholder="項目名（空欄ならカテゴリ名を使用・入力で自動判別）" oninput="handleFcNameInput()" style="flex:1;padding:8px 10px;font-size:18px;">
       <button type="button" id="fcCatEmojiBtn" class="cat-emoji-btn" onclick="toggleFcCatPicker()">📦</button>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;">
-      <input class="field-input" id="fcAmount" type="number" placeholder="金額（円）" style="padding:8px 10px;font-size:16px;" inputmode="numeric">
-      <input class="field-input" id="fcDueDay" type="number" placeholder="支払日（1-31）" min="1" max="31" style="padding:8px 10px;font-size:16px;" inputmode="numeric">
+      <input class="field-input" id="fcAmount" type="number" placeholder="金額（円）" style="padding:8px 10px;font-size:18px;" inputmode="numeric">
+      <input class="field-input" id="fcDueDay" type="number" placeholder="支払日（1-31）" min="1" max="31" style="padding:8px 10px;font-size:18px;" inputmode="numeric">
     </div>
-    <div style="font-size:14px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
+    <div style="font-size:16px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
       項目名を空欄にすると、選択したカテゴリ名がそのまま項目名になります。金額が分からない場合も空欄のままで登録できます。使えないお金として先に項目だけ確保し、次の期間を始めるタイミングでまとめて入力を促します。
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-      <button onclick="closeFixedCostForm()" style="padding:10px;border-radius:8px;border:0.5px solid var(--border);background:transparent;font-size:16px;cursor:pointer;font-family:inherit;color:var(--sub);">キャンセル</button>
-      <button onclick="saveFixedCostItem()" style="padding:10px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:16px;font-weight:600;cursor:pointer;font-family:inherit;">保存</button>
+      <button onclick="closeFixedCostForm()" style="padding:10px;border-radius:8px;border:0.5px solid var(--border);background:transparent;font-size:18px;cursor:pointer;font-family:inherit;color:var(--sub);">キャンセル</button>
+      <button onclick="saveFixedCostItem()" style="padding:10px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:18px;font-weight:600;cursor:pointer;font-family:inherit;">保存</button>
     </div>
   </div>
 
@@ -656,7 +652,7 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
     <div class="cat-picker-sheet" id="fcCatPickerSheet"></div>
   </div>
 
-  <div style="font-size:14px;color:var(--muted);line-height:1.7;padding:4px 2px;">
+  <div style="font-size:16px;color:var(--muted);line-height:1.7;padding:4px 2px;">
     ここで登録した固定費は、「新しい月を開始」の際に月初確保の支出として自動的に計上されます。
   </div>
 </div>
@@ -739,7 +735,7 @@ function getBudgetTotal(periodIdx) {
 // ============================================================
 // バージョン情報
 // ============================================================
-const APP_VERSION = "2.14.0"; // ← 更新するたびに番号を上げる
+const APP_VERSION = "2.15.0"; // ← 更新するたびに番号を上げる
 
 // ============================================================
 // ストレージ
@@ -924,7 +920,7 @@ function renderHome() {
     document.getElementById("budgetStatusText").textContent = "";
     document.getElementById("budgetStatusSub").textContent  = "";
     document.getElementById("txList").innerHTML =
-      `<div style="padding:20px;text-align:center;color:var(--muted);font-size:16px;line-height:1.7;">「その他」タブの<br>「長押しで新しい月を開始」から<br>家計簿をスタートしてください</div>`;
+      `<div style="padding:20px;text-align:center;color:var(--muted);font-size:18px;line-height:1.7;">「その他」タブの<br>「長押しで新しい月を開始」から<br>家計簿をスタートしてください</div>`;
     updatePeriodNavButtons();
     return;
   }
@@ -1016,7 +1012,7 @@ function renderHome() {
   const recent = [...txs].sort((a,b)=>b.id-a.id);
   const allCats = [...CATS_EXPENSE,...CATS_INCOME];
   document.getElementById("txList").innerHTML = recent.length === 0
-    ? `<div style="padding:20px;text-align:center;color:var(--muted);font-size:16px;">取引がありません</div>`
+    ? `<div style="padding:20px;text-align:center;color:var(--muted);font-size:18px;">取引がありません</div>`
     : recent.map(t => {
         const c = allCats.find(c=>c.id===t.cat) || {emoji:"📦",label:"その他"};
         const bg = t.type==="income" ? "var(--green-l)" : "var(--red-l)";
@@ -1255,7 +1251,7 @@ function renderGraph() {
   if (!periods.length) {
     document.getElementById("graphMonthTitle").textContent = "未開始";
     document.getElementById("barChart").innerHTML =
-      `<div style="width:100%;text-align:center;color:var(--muted);font-size:15px;padding:20px 0;">「その他」タブから新しい月を開始してください</div>`;
+      `<div style="width:100%;text-align:center;color:var(--muted);font-size:17px;padding:20px 0;">「その他」タブから新しい月を開始してください</div>`;
     document.getElementById("monthDetail").innerHTML = "";
     document.getElementById("catSummary").innerHTML = "";
     updatePeriodNavButtons();
@@ -1305,7 +1301,7 @@ function renderGraph() {
         border:1px solid ${isSelected?'var(--green)':'var(--border)'};
         background:${isSelected?'var(--green-l)':'transparent'};
         color:${isSelected?'var(--green-d)':'var(--sub)'};
-        font-size:13px;font-weight:${isSelected?700:400};
+        font-size:15px;font-weight:${isSelected?700:400};
         cursor:pointer;font-family:inherit;white-space:nowrap;width:100%;">
         ${label}
       </button>
@@ -1334,16 +1330,16 @@ function renderMonthDetail(idx) {
   document.getElementById("monthDetail").innerHTML = `
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">
       <div style="background:var(--green-l);border-radius:8px;padding:8px;text-align:center;">
-        <div style="font-size:13px;color:var(--green-d);margin-bottom:2px;">収入</div>
-        <div style="font-size:16px;font-weight:700;color:var(--green-d);">${fmt(inc)}</div>
+        <div style="font-size:15px;color:var(--green-d);margin-bottom:2px;">収入</div>
+        <div style="font-size:18px;font-weight:700;color:var(--green-d);">${fmt(inc)}</div>
       </div>
       <div style="background:var(--red-l);border-radius:8px;padding:8px;text-align:center;">
-        <div style="font-size:13px;color:var(--red);margin-bottom:2px;">支出</div>
-        <div style="font-size:16px;font-weight:700;color:var(--red);">${fmt(exp)}</div>
+        <div style="font-size:15px;color:var(--red);margin-bottom:2px;">支出</div>
+        <div style="font-size:18px;font-weight:700;color:var(--red);">${fmt(exp)}</div>
       </div>
       <div style="background:${bal>=0?'var(--blue-l)':'var(--red-l)'};border-radius:8px;padding:8px;text-align:center;">
-        <div style="font-size:13px;color:${bal>=0?'var(--blue)':'var(--red)'};margin-bottom:2px;">収支</div>
-        <div style="font-size:16px;font-weight:700;color:${bal>=0?'var(--blue)':'var(--red)'};">${bal>=0?'+':''}${fmt(bal)}</div>
+        <div style="font-size:15px;color:${bal>=0?'var(--blue)':'var(--red)'};margin-bottom:2px;">収支</div>
+        <div style="font-size:18px;font-weight:700;color:${bal>=0?'var(--blue)':'var(--red)'};">${bal>=0?'+':''}${fmt(bal)}</div>
       </div>
     </div>`;
 }
@@ -1642,7 +1638,7 @@ function renderSavings() {
   // プランリスト（各プランに達成率の進捗バーを表示）
   const listEl = document.getElementById("savingsList");
   if (plans.length === 0) {
-    listEl.innerHTML = `<div style="text-align:center;padding:30px;color:var(--muted);font-size:16px;">積立プランがありません<br>上の「＋ 積立プランを追加」から作成してください</div>`;
+    listEl.innerHTML = `<div style="text-align:center;padding:30px;color:var(--muted);font-size:18px;">積立プランがありません<br>上の「＋ 積立プランを追加」から作成してください</div>`;
     return;
   }
 
@@ -1917,7 +1913,7 @@ function renderFixedCostsPage() {
 function renderFixedCostList(cycle) {
   const el = document.getElementById("cfFixedCostList");
   if (!cycle.fixed_costs.length) {
-    el.innerHTML = `<div style="padding:16px;text-align:center;color:var(--muted);font-size:15px;">固定費が登録されていません</div>`;
+    el.innerHTML = `<div style="padding:16px;text-align:center;color:var(--muted);font-size:17px;">固定費が登録されていません</div>`;
     return;
   }
   const badge = {
@@ -1944,7 +1940,7 @@ function renderFixedCostList(cycle) {
       </div>
       <div style="text-align:right;">
         <div class="tx-amount" style="color:var(--text);">${fmt(item.amount || 0)}</div>
-        <div style="font-size:12px;color:${color};font-weight:600;">${label}</div>
+        <div style="font-size:14px;color:${color};font-weight:600;">${label}</div>
       </div>
       <button onclick="event.stopPropagation();deleteFixedCostItem('${item.id}')" class="delete-x">✕</button>
     </div>`;
