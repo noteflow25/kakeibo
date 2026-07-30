@@ -610,21 +610,30 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
 
   <div class="section-title" style="margin-top:18px">月次の切り替え</div>
   <div class="export-section">
-    <div style="font-size:16px;color:var(--sub);margin-bottom:8px;line-height:1.6;">
-      固定費・積立の今月分を「使えないお金」として確保し、家計簿の残高を0円からスタートさせます。月の変わり目や給料日など、区切りのタイミングで実行してください。データが大きく変わるため、実行前に上のCSV保存でバックアップしておくと安心です。誤操作防止のため、ボタンは1.2秒の長押しで実行されます。
+    <!-- 家計簿を一度も開始していない場合：最初の開始日を選んでもらう -->
+    <div id="newMonthSetupSection" style="display:none;">
+      <div style="font-size:16px;color:var(--sub);margin-bottom:8px;line-height:1.6;">
+        まずは家計簿を開始する日を選んでください。給料日など、区切りにしたい日で構いません。次の月からは、この日を基準に毎月自動的に切り替わります。
+      </div>
+      <button class="export-btn" style="background:var(--amber-l);border-color:var(--amber);color:var(--amber);font-weight:700;" onclick="openNewMonthForm()">
+        家計簿を開始する
+      </button>
     </div>
-    <button id="newMonthBtn" class="export-btn"
-            style="position:relative;overflow:hidden;background:var(--amber-l);border-color:var(--amber);color:var(--red);font-weight:700;-webkit-user-select:none;user-select:none;touch-action:manipulation;"
-            onpointerdown="startHoldNewMonth()" onpointerup="cancelHoldNewMonth()"
-            onpointerleave="cancelHoldNewMonth()" onpointercancel="cancelHoldNewMonth()">
-      <span id="newMonthBtnFill" style="position:absolute;top:0;left:0;bottom:0;width:0%;background:rgba(255,255,255,.5);pointer-events:none;"></span>
-      <span style="position:relative;">長押しで新しい月を開始</span>
-    </button>
 
-    <!-- 長押し後に表示される開始日確認フォーム -->
+    <!-- 開始済みの場合：自動切り替えの案内のみ表示 -->
+    <div id="newMonthAutoInfo" style="display:none;">
+      <div style="font-size:16px;color:var(--sub);margin-bottom:4px;line-height:1.6;">
+        毎月<span id="autoSwitchDayText"></span>ごろになると、固定費・積立を自動的に確保して新しい月度に切り替わります。実行前に上のCSV保存でバックアップしておくと安心です。
+      </div>
+      <div style="font-size:15px;color:var(--muted);line-height:1.6;">
+        切り替えの日を直したいときは、ホーム画面の「開始日を修正」から変更できます。
+      </div>
+    </div>
+
+    <!-- 開始日を選ぶフォーム（初回開始時に使用） -->
     <div id="newMonthForm" style="display:none;background:var(--bg);border-radius:var(--radius-s);padding:12px;margin-top:10px;">
       <div style="font-size:16px;color:var(--sub);margin-bottom:8px;line-height:1.6;">
-        開始日を確認してください。今日以外の日から始める場合や、あとで気づいた場合はここで変更できます。
+        開始日を確認してください。今日以外の日から始める場合はここで変更できます。
       </div>
       <input class="field-input" id="newMonthDateInput" type="date" style="width:100%;padding:8px 10px;font-size:19px;margin-bottom:10px;">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
@@ -777,7 +786,7 @@ function getBudgetTotal(periodIdx) {
 // ============================================================
 // バージョン情報
 // ============================================================
-const APP_VERSION = "2.18.1"; // ← 更新するたびに番号を上げる
+const APP_VERSION = "2.19.0"; // ← 更新するたびに番号を上げる
 
 // ============================================================
 // ストレージ
@@ -1186,7 +1195,7 @@ function renderHome() {
     document.getElementById("budgetStatusText").textContent = "";
     document.getElementById("budgetStatusSub").textContent  = "";
     document.getElementById("txList").innerHTML =
-      `<div style="padding:20px;text-align:center;color:var(--muted);font-size:18px;line-height:1.7;">「その他」タブの<br>「長押しで新しい月を開始」から<br>家計簿をスタートしてください</div>`;
+      `<div style="padding:20px;text-align:center;color:var(--muted);font-size:18px;line-height:1.7;">「その他」タブの<br>「家計簿を開始する」から<br>家計簿をスタートしてください</div>`;
     updatePeriodNavButtons();
     return;
   }
@@ -1646,6 +1655,7 @@ function showPage(name) {
   if (name==="graph")      renderGraph();
   if (name==="savings")    { renderSavings(); toggleFlowBanner("flowNextToFixed", newMonthFlowStep === "savings"); }
   if (name==="fixedcosts") { renderFixedCostsPage(); toggleFlowBanner("flowFinish", newMonthFlowStep === "fixedcosts"); }
+  if (name==="utility")    renderUtilityPage();
 }
 
 // ランチャー（アイコングリッド）上の残高ウィジェットを、ホーム画面の集計結果を使って更新
@@ -1661,6 +1671,23 @@ function updateLauncherWidget() {
 function toggleFlowBanner(id, show) {
   const el = document.getElementById(id);
   if (el) el.style.display = show ? "block" : "none";
+}
+
+// 「その他」タブ内の「月次の切り替え」欄を、家計簿の開始状況に応じて出し分ける
+function renderUtilityPage() {
+  const periods = ensurePeriods();
+  const setupEl = document.getElementById("newMonthSetupSection");
+  const autoEl = document.getElementById("newMonthAutoInfo");
+  if (!periods.length) {
+    if (setupEl) setupEl.style.display = "block";
+    if (autoEl) autoEl.style.display = "none";
+  } else {
+    if (setupEl) setupEl.style.display = "none";
+    if (autoEl) autoEl.style.display = "block";
+    const d = new Date(periods[periods.length - 1].start_date);
+    const dayText = document.getElementById("autoSwitchDayText");
+    if (dayText) dayText.textContent = `${d.getDate()}日`;
+  }
 }
 
 
@@ -2344,34 +2371,8 @@ function deleteFixedCostItem(id) {
   showToast("削除しました");
 }
 
-// 誤操作防止：ボタンを1.2秒長押しした場合のみ startNewMonth() を実行する
+// 誤操作防止用の長押し時間（レシート記録ボタンで使用）
 const HOLD_DURATION = 1200; // ms
-let holdTimer = null;
-let holdInterval = null;
-
-function startHoldNewMonth() {
-  const fill = document.getElementById("newMonthBtnFill");
-  if (!fill) return;
-  let elapsed = 0;
-  fill.style.width = "0%";
-  holdInterval = setInterval(() => {
-    elapsed += 30;
-    fill.style.width = Math.min((elapsed / HOLD_DURATION) * 100, 100) + "%";
-  }, 30);
-  holdTimer = setTimeout(() => {
-    cancelHoldNewMonth();
-    openNewMonthForm();
-  }, HOLD_DURATION);
-}
-
-function cancelHoldNewMonth() {
-  clearTimeout(holdTimer);
-  clearInterval(holdInterval);
-  holdTimer = null;
-  holdInterval = null;
-  const fill = document.getElementById("newMonthBtnFill");
-  if (fill) fill.style.width = "0%";
-}
 
 // レシート記録ボタンの長押し検出（誤操作でShortcutsが起動しないように）
 let receiptHoldTimer = null;
@@ -2417,7 +2418,7 @@ function openNewMonthForm() {
 function closeNewMonthForm() {
   document.getElementById("newMonthForm").style.display = "none";
 }
-// フォームの「この日付で開始」ボタンから呼ばれる
+// フォームの「この日付で開始」ボタンから呼ばれる（初回の家計簿開始時のみ使用）
 function confirmStartNewMonth() {
   const dateVal = document.getElementById("newMonthDateInput").value;
   if (!dateVal) { showToast("開始日を選択してください"); return; }
@@ -2430,7 +2431,33 @@ function confirmStartNewMonth() {
   startNewMonth(dateVal);
 }
 
-function startNewMonth(startDate) {
+// startDateから見た「次の月度の開始日」（1か月後の同じ日）を返す。
+// 自動切り替えの判定・実行に使用する。
+function addOneMonth(dateStr) {
+  const d = new Date(dateStr);
+  d.setMonth(d.getMonth() + 1);
+  return d.toISOString().slice(0, 10);
+}
+
+// アプリ起動のたびに呼ばれる。最新月度の開始日から1か月経過していれば、
+// 長押し操作なしで自動的に新しい月度へ切り替える（複数月分見逃していた場合は
+// 経過した月度分だけ繰り返し進める）。家計簿がまだ1件も始まっていない場合は
+// 何もしない（その場合は「家計簿を開始する」からの初回設定を待つ）。
+function checkAutoNewMonth() {
+  let periods = ensurePeriods();
+  if (!periods.length) return;
+  const today = localDateStr();
+  let guard = 0;
+  while (guard++ < 24) {
+    periods = ensurePeriods();
+    const last = periods[periods.length - 1];
+    const nextStart = addOneMonth(last.start_date);
+    if (today < nextStart) break;
+    startNewMonth(nextStart, /* auto */ true);
+  }
+}
+
+function startNewMonth(startDate, auto = false) {
   const periods = ensurePeriods();
   const isFirstTime = periods.length === 0;
   const today = startDate || localDateStr();
@@ -2503,12 +2530,21 @@ function startNewMonth(startDate) {
   // 新しい月度を開始し、表示もその月度に切り替える
   viewPeriodIndex = startNewPeriod(today);
   renderHome();
+  updateLauncherWidget();
 
-  // ①収入 → ②積立 → ③固定費 の順に案内する
-  newMonthFlowStep = "income";
-  showPage("input");
-  setType("income");
-  showToast("まず収入を入力してください");
+  if (auto) {
+    // 自動切り替えの場合、操作中の画面を邪魔しないようそのままにする
+    // （固定費・積立の確保結果は既にshowToastで案内済み）
+    return;
+  }
+
+  // 初回開始時のみ、①収入 → ②積立 → ③固定費 の順に案内する
+  if (isFirstTime) {
+    newMonthFlowStep = "income";
+    showPage("input");
+    setType("income");
+    showToast("まず収入を入力してください");
+  }
 }
 
 // 積立タブから固定費タブへ（新しい月を開始フローの一部）
@@ -2610,6 +2646,9 @@ function init() {
   // バージョン表示
   document.getElementById("versionText").textContent = APP_VERSION;
 
+  ensureCycle();
+  checkAutoNewMonth(); // 前回起動時から月をまたいでいれば、自動的に新しい月度へ切り替える
+
   receiveFromUrl();
 
   const today = localDateStr();
@@ -2618,7 +2657,6 @@ function init() {
   setType("expense");
   renderHome();
   updateLauncherWidget();
-  ensureCycle();
 
   // レシート写真の添付状況を読み込んでから一覧アイコンを反映する
   refreshReceiptIdSet().then(renderHome);
