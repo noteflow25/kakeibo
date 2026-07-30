@@ -593,55 +593,33 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
     <div id="receiptMatchResult" style="font-size:16px;color:var(--sub);margin-top:8px;line-height:1.6;"></div>
   </div>
 
-  <div class="section-title" style="margin-top:4px">データのバックアップ</div>
+  <div class="section-title" style="margin-top:4px">記録の保存（控え）</div>
   <div class="export-section">
     <div style="font-size:16px;color:var(--sub);margin-bottom:8px;line-height:1.6;">
-      取引データをCSV形式で書き出します。Excelやスプレッドシートで開いて確認・保管できます。
+      これまでの記録を、控えとしてスマホに保存しておけます。もしもの時のために、時々保存しておくと安心です。
     </div>
     <button class="export-btn" onclick="exportCSV('month')">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      今月のデータをCSVで保存
+      今月分の記録を保存
     </button>
     <button class="export-btn" onclick="exportCSV('all')" style="background:var(--blue-l);border-color:var(--blue);color:var(--blue);">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      全データをCSVで保存
+      全部の記録を保存
     </button>
   </div>
 
-  <div class="section-title" style="margin-top:18px">月次の切り替え</div>
-  <div class="export-section">
-    <!-- 家計簿を一度も開始していない場合：最初の開始日を選んでもらう -->
-    <div id="newMonthSetupSection" style="display:none;">
-      <div style="font-size:16px;color:var(--sub);margin-bottom:8px;line-height:1.6;">
-        まずは家計簿を開始する日を選んでください。給料日など、区切りにしたい日で構いません。次の月からは、この日を基準に毎月自動的に切り替わります。
-      </div>
-      <button class="export-btn" style="background:var(--amber-l);border-color:var(--amber);color:var(--amber);font-weight:700;" onclick="openNewMonthForm()">
-        家計簿を開始する
-      </button>
+  <!-- 開始日を選ぶフォーム（初回に「家計簿を始める」から開く。通常時は非表示） -->
+  <div id="newMonthForm" style="display:none;background:var(--bg);border-radius:var(--radius-s);padding:12px;margin-top:18px;">
+    <div style="font-size:16px;color:var(--sub);margin-bottom:8px;line-height:1.6;">
+      開始日を確認してください。今日以外の日から始める場合はここで変更できます。
     </div>
-
-    <!-- 開始済みの場合：自動切り替えの案内のみ表示 -->
-    <div id="newMonthAutoInfo" style="display:none;">
-      <div style="font-size:16px;color:var(--sub);margin-bottom:4px;line-height:1.6;">
-        毎月<span id="autoSwitchDayText"></span>ごろになると、固定費・積立を自動的に確保して新しい月度に切り替わります。実行前に上のCSV保存でバックアップしておくと安心です。
-      </div>
-      <div style="font-size:15px;color:var(--muted);line-height:1.6;">
-        切り替えの日を直したいときは、ホーム画面の「開始日を修正」から変更できます。
-      </div>
-    </div>
-
-    <!-- 開始日を選ぶフォーム（初回開始時に使用） -->
-    <div id="newMonthForm" style="display:none;background:var(--bg);border-radius:var(--radius-s);padding:12px;margin-top:10px;">
-      <div style="font-size:16px;color:var(--sub);margin-bottom:8px;line-height:1.6;">
-        開始日を確認してください。今日以外の日から始める場合はここで変更できます。
-      </div>
-      <input class="field-input" id="newMonthDateInput" type="date" style="width:100%;padding:8px 10px;font-size:19px;margin-bottom:10px;">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-        <button onclick="closeNewMonthForm()" style="padding:10px;border-radius:8px;border:0.5px solid var(--border);background:transparent;font-size:18px;cursor:pointer;font-family:inherit;color:var(--sub);">キャンセル</button>
-        <button onclick="confirmStartNewMonth()" style="padding:10px;border-radius:8px;border:none;background:var(--amber);color:#fff;font-size:18px;font-weight:700;cursor:pointer;font-family:inherit;">この日付で開始</button>
-      </div>
+    <input class="field-input" id="newMonthDateInput" type="date" style="width:100%;padding:8px 10px;font-size:19px;margin-bottom:10px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <button onclick="closeNewMonthForm()" style="padding:10px;border-radius:8px;border:0.5px solid var(--border);background:transparent;font-size:18px;cursor:pointer;font-family:inherit;color:var(--sub);">キャンセル</button>
+      <button onclick="confirmStartNewMonth()" style="padding:10px;border-radius:8px;border:none;background:var(--amber);color:#fff;font-size:18px;font-weight:700;cursor:pointer;font-family:inherit;">この日付で開始</button>
     </div>
   </div>
+
 
   <div style="text-align:right;font-size:14px;color:var(--muted);opacity:0.7;margin-top:14px;font-variant-numeric:tabular-nums;">
     v<span id="versionText"></span>
@@ -786,7 +764,7 @@ function getBudgetTotal(periodIdx) {
 // ============================================================
 // バージョン情報
 // ============================================================
-const APP_VERSION = "2.19.0"; // ← 更新するたびに番号を上げる
+const APP_VERSION = "2.19.1"; // ← 更新するたびに番号を上げる
 
 // ============================================================
 // ストレージ
@@ -1195,7 +1173,10 @@ function renderHome() {
     document.getElementById("budgetStatusText").textContent = "";
     document.getElementById("budgetStatusSub").textContent  = "";
     document.getElementById("txList").innerHTML =
-      `<div style="padding:20px;text-align:center;color:var(--muted);font-size:18px;line-height:1.7;">「その他」タブの<br>「家計簿を開始する」から<br>家計簿をスタートしてください</div>`;
+      `<div style="padding:20px;text-align:center;color:var(--muted);font-size:18px;line-height:1.7;">
+        まずは家計簿を始めましょう。<br>
+        <button class="export-btn" style="display:inline-block;margin-top:12px;background:var(--amber-l);border-color:var(--amber);color:var(--amber);font-weight:700;width:auto;padding:12px 24px;" onclick="showPage('utility'); openNewMonthForm();">家計簿を始める</button>
+      </div>`;
     updatePeriodNavButtons();
     return;
   }
@@ -1673,22 +1654,8 @@ function toggleFlowBanner(id, show) {
   if (el) el.style.display = show ? "block" : "none";
 }
 
-// 「その他」タブ内の「月次の切り替え」欄を、家計簿の開始状況に応じて出し分ける
-function renderUtilityPage() {
-  const periods = ensurePeriods();
-  const setupEl = document.getElementById("newMonthSetupSection");
-  const autoEl = document.getElementById("newMonthAutoInfo");
-  if (!periods.length) {
-    if (setupEl) setupEl.style.display = "block";
-    if (autoEl) autoEl.style.display = "none";
-  } else {
-    if (setupEl) setupEl.style.display = "none";
-    if (autoEl) autoEl.style.display = "block";
-    const d = new Date(periods[periods.length - 1].start_date);
-    const dayText = document.getElementById("autoSwitchDayText");
-    if (dayText) dayText.textContent = `${d.getDate()}日`;
-  }
-}
+// 「その他」タブ表示時の処理（現状は特別な出し分けなし。将来の拡張用に残す）
+function renderUtilityPage() {}
 
 
 // ============================================================
