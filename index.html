@@ -342,10 +342,6 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
       <div style="flex:1;min-width:0;">
         <div class="balance-label">今月度の残高</div>
         <div class="balance-amount" id="balanceAmount">¥0</div>
-        <div class="balance-sub">
-          <div class="balance-sub-item">総収入<span id="totalIncome" style="color:#A7F3D0">¥0</span></div>
-          <div class="balance-sub-item">総支出<span id="totalExpense" style="color:#FCA5A5">¥0</span></div>
-        </div>
       </div>
       <div style="text-align:right;flex-shrink:0;padding-top:2px;">
         <div style="font-size:15px;opacity:.8;">積立合計</div>
@@ -766,7 +762,7 @@ function getBudgetTotal(periodIdx) {
 // ============================================================
 // バージョン情報
 // ============================================================
-const APP_VERSION = "2.20.0"; // ← 更新するたびに番号を上げる
+const APP_VERSION = "2.21.0"; // ← 更新するたびに番号を上げる
 
 // ============================================================
 // ストレージ
@@ -1164,8 +1160,6 @@ function renderHome() {
     closeEditPeriodStart();
     document.getElementById("monthTitle").textContent = "未開始";
     document.getElementById("balanceAmount").textContent = fmt(0);
-    document.getElementById("totalIncome").textContent   = fmt(0);
-    document.getElementById("totalExpense").textContent  = fmt(0);
     document.getElementById("homeSavingsTotal").textContent = fmt(0);
     document.getElementById("homeFixedTotal").textContent   = fmt(0);
     document.getElementById("budgetBar").style.width = "0%";
@@ -1207,8 +1201,6 @@ function renderHome() {
   document.getElementById("editPeriodStartBtn").style.display = isLatestPeriodForEdit ? "inline-block" : "none";
   if (!isLatestPeriodForEdit) closeEditPeriodStart();
   document.getElementById("balanceAmount").textContent = fmt(balance);
-  document.getElementById("totalIncome").textContent   = fmt(income);
-  document.getElementById("totalExpense").textContent  = fmt(expense);
 
   // 積立合計・固定合計（残高カード右側の参考表示）
   document.getElementById("homeSavingsTotal").textContent = fmt(savingsTotal);
@@ -1263,7 +1255,7 @@ function renderHome() {
   document.getElementById("budgetStatusText").style.color = statusColor;
   document.getElementById("budgetStatusSub").textContent  =
     isLatestPeriod
-      ? `残り${remainDays}日 / ¥${remaining.toLocaleString()}残`
+      ? `残り${remainDays}日`
       : `(理想:${idealPct}% / 実績:${pct}%)`;
 
   // 今月度の取引：レシート等の日付に関係なく、登録した順（新しい順）に表示する
