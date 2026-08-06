@@ -201,8 +201,8 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
 .icon-tile-box svg{width:44%;height:44%;stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;position:relative;z-index:1;}
 .icon-tile-label{font-size:18px;font-weight:700;color:var(--text);}
 .icon-tile:active .icon-tile-box{transform:scale(.94);}
-.icon-tile.t-home     .icon-tile-box{background:var(--green);}
-.icon-tile.t-input    .icon-tile-box{background:var(--orange);}
+.icon-tile.t-expense  .icon-tile-box{background:var(--orange);}
+.icon-tile.t-income   .icon-tile-box{background:var(--green);}
 .icon-tile.t-graph    .icon-tile-box{background:var(--blue);}
 .icon-tile.t-savings  .icon-tile-box{background:var(--rose);}
 .icon-tile.t-fixedcosts .icon-tile-box{background:var(--purple);}
@@ -291,13 +291,13 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
   </button>
 
   <div class="icon-grid">
-    <button class="icon-tile t-input" onclick="showPage('input')">
-      <span class="icon-tile-box"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span>
-      <span class="icon-tile-label">入力</span>
+    <button class="icon-tile t-expense" onclick="showPage('input'); setType('expense');">
+      <span class="icon-tile-box"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span>
+      <span class="icon-tile-label">支出</span>
     </button>
-    <button class="icon-tile t-home" onclick="showPage('home')">
-      <span class="icon-tile-box"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/></svg></span>
-      <span class="icon-tile-label">記録</span>
+    <button class="icon-tile t-income" onclick="showPage('input'); setType('income');">
+      <span class="icon-tile-box"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span>
+      <span class="icon-tile-label">収入</span>
     </button>
     <button class="icon-tile t-graph" onclick="showPage('graph')">
       <span class="icon-tile-box"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
@@ -409,11 +409,8 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
 
 <!-- ===== 入力 ===== -->
 <div class="page" id="page-input">
-  <!-- 支出・収入トグル -->
-  <div class="type-toggle" style="margin-bottom:6px;">
-    <button class="type-btn active-expense" id="typeExpense" onclick="setType('expense')">支出</button>
-    <button class="type-btn" id="typeIncome" onclick="setType('income')">収入</button>
-  </div>
+  <!-- ページタイトル（支出／収入タブのどちらから入ったかで自動的に決まる） -->
+  <div class="section-title" id="inputPageTitle" style="margin-bottom:6px;">支出の入力</div>
 
   <!-- 金額表示 -->
   <div class="input-card" style="padding:8px 14px;margin-bottom:6px;">
@@ -762,7 +759,7 @@ function getBudgetTotal(periodIdx) {
 // ============================================================
 // バージョン情報
 // ============================================================
-const APP_VERSION = "2.21.0"; // ← 更新するたびに番号を上げる
+const APP_VERSION = "2.22.0"; // ← 更新するたびに番号を上げる
 
 // ============================================================
 // ストレージ
@@ -1296,10 +1293,8 @@ function setType(type) {
   selectedCat = cats.find(c => c.id !== "carryover").id;
   catAutoLocked = false; // 支出/収入を切り替えたら自動判別を再度有効にする
 
-  document.getElementById("typeExpense").className =
-    "type-btn" + (type==="expense" ? " active-expense" : "");
-  document.getElementById("typeIncome").className =
-    "type-btn" + (type==="income" ? " active-income" : "");
+  document.getElementById("inputPageTitle").textContent =
+    type === "expense" ? "支出の入力" : "収入の入力";
 
   document.getElementById("submitBtn").textContent =
     type === "expense" ? "支出を記録" : "収入を記録";
