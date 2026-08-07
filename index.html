@@ -317,6 +317,12 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
       <span class="icon-tile-label">その他</span>
     </button>
   </div>
+
+  <!-- 最近の収支（小さいプレビュー。タップするとグラフタブの詳細を開く） -->
+  <div class="graph-card" style="margin-top:16px;cursor:pointer;" onclick="showPage('graph')">
+    <div class="graph-title">最近の収支</div>
+    <div id="homeMiniChart" style="display:flex;align-items:stretch;gap:6px;height:100px;"></div>
+  </div>
 </div>
 
 
@@ -463,12 +469,12 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
   </div>
   <!-- 月次棒グラフ -->
   <div class="graph-card">
-    <div class="graph-title">月別収支（直近6ヶ月）</div>
-    <!-- 棒グラフ＋月ラベルを一体化 -->
-    <div id="barChart" style="display:flex;align-items:flex-end;gap:6px;height:170px;margin-bottom:0;overflow:hidden;"></div>
+    <div class="graph-title">月別の黒字・赤字（直近6ヶ月）</div>
+    <!-- 差額（黒字/赤字）の棒グラフ＋月ラベルを一体化 -->
+    <div id="barChart" style="display:flex;align-items:stretch;gap:6px;height:170px;margin-bottom:0;overflow:hidden;"></div>
     <div class="legend" style="margin-top:6px;">
-      <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>支出</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--green);opacity:.6"></div>収入</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>黒字の月</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>赤字の月</div>
     </div>
     <!-- 選択月の収支詳細 -->
     <div id="monthDetail" style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);"></div>
@@ -760,7 +766,7 @@ function getBudgetTotal(periodIdx) {
 // ============================================================
 // バージョン情報
 // ============================================================
-const APP_VERSION = "2.23.2"; // ← 更新するたびに番号を上げる
+const APP_VERSION = "2.24.0"; // ← 更新するたびに番号を上げる
 
 // ============================================================
 // ストレージ
@@ -1544,29 +1550,32 @@ function renderGraph() {
     selectedGraphPeriodIdx = endIdx;
   }
 
-  // 各月度の最大値を動的に計算してスケール自動調整
+  // 各月度の黒字/赤字額を計算し、最大の絶対値でスケール自動調整
   const periodData = idxList.map(idx => {
     const txs = periodTxs(idx);
     const exp = txs.filter(t=>t.type==="expense").reduce((s,t)=>s+t.amount,0);
     const inc = txs.filter(t=>t.type==="income").reduce((s,t)=>s+t.amount,0);
     const d = new Date(periods[idx].start_date);
-    return { idx, label: `${d.getMonth()+1}月度`, exp, inc };
+    return { idx, label: `${d.getMonth()+1}月度`, bal: inc - exp };
   });
-  const maxAmt = Math.max(...periodData.map(d => Math.max(d.exp, d.inc)), 1);
+  const maxAbsBal = Math.max(...periodData.map(d => Math.abs(d.bal)), 1);
 
   const barChart = document.getElementById("barChart");
-  // コンテナの実際の高さからボタン分を引いて棒の最大高さを計算
-  const BAR_MAX_H = Math.max((barChart.clientHeight || 170) - 32, 80);
+  // コンテナの実際の高さからボタン・ゼロ線分を引いて、プラス側/マイナス側それぞれの最大高さを計算
+  const HALF_MAX_H = Math.max(((barChart.clientHeight || 170) - 32) / 2, 40);
 
-  barChart.innerHTML = periodData.map(({idx,label,exp,inc}) => {
-    const expH = Math.round(exp / maxAmt * BAR_MAX_H);
-    const incH = Math.round(inc / maxAmt * BAR_MAX_H);
+  barChart.innerHTML = periodData.map(({idx,label,bal}) => {
+    const barH = Math.round(Math.abs(bal) / maxAbsBal * HALF_MAX_H);
+    const isSurplus = bal >= 0;
     const isSelected = selectedGraphPeriodIdx === idx;
     return `<div class="bar-col" onclick="selectGraphPeriod(${idx})"
       style="flex:1;display:flex;flex-direction:column;align-items:center;cursor:pointer;">
-      <div style="flex:1;width:100%;display:flex;flex-direction:column;justify-content:flex-end;gap:2px;">
-        <div style="border-radius:4px 4px 0 0;background:var(--green);opacity:0.6;height:${incH}px;"></div>
-        <div style="border-radius:4px 4px 0 0;background:var(--red);height:${expH}px;"></div>
+      <div style="height:${HALF_MAX_H}px;width:100%;display:flex;align-items:flex-end;justify-content:center;">
+        <div style="width:65%;border-radius:4px 4px 0 0;background:var(--green);height:${isSurplus?barH:0}px;"></div>
+      </div>
+      <div style="width:100%;height:1px;background:var(--border);"></div>
+      <div style="height:${HALF_MAX_H}px;width:100%;display:flex;align-items:flex-start;justify-content:center;">
+        <div style="width:65%;border-radius:0 0 4px 4px;background:var(--red);height:${isSurplus?0:barH}px;"></div>
       </div>
       <button style="
         margin-top:5px;padding:3px 6px;border-radius:20px;
@@ -1591,6 +1600,7 @@ function renderGraph() {
 
 function selectGraphPeriod(idx) {
   selectedGraphPeriodIdx = idx;
+  catSummaryExpanded = false;
   renderGraph();
 }
 
@@ -1616,23 +1626,60 @@ function renderMonthDetail(idx) {
     </div>`;
 }
 
+let catSummaryExpanded = false; // 「それ以外」の内訳を開いているかどうか
+const CAT_SUMMARY_TOP_N = 5;    // 個別に表示するカテゴリ数（残りは「それ以外」にまとめる）
+
+function catSummaryRowHtml(c, maxVal, opts = {}) {
+  const { sub = false, muted = false, onclick = "" } = opts;
+  const nameWidth = c.id ? "60px" : "108px";
+  const rowStyle = (sub ? "padding-left:22px;opacity:.85;" : "") + (onclick ? "cursor:pointer;" : "");
+  return `<div class="cat-summary-row" style="${rowStyle}" ${onclick ? `onclick="${onclick}"` : ""}>
+      <div class="cat-summary-name" style="width:${nameWidth};">${c.emoji} ${c.label}</div>
+      <div class="cat-summary-bar-track">
+        <div class="cat-summary-bar-fill" style="width:${Math.round(c.total/maxVal*100)}%;${muted ? "background:var(--muted);" : ""}"></div>
+      </div>
+      <div class="cat-summary-val">${c.total>0?fmt(c.total):'—'}</div>
+    </div>`;
+}
+
+function toggleCatSummaryOther() {
+  catSummaryExpanded = !catSummaryExpanded;
+  renderGraph();
+}
+
 function renderCatSummary(idx) {
   const txs = periodTxs(idx).filter(t=>t.type==="expense");
   const catTotals = CATS_EXPENSE.map(c => ({
     ...c,
     total: txs.filter(t=>t.cat===c.id).reduce((s,t)=>s+t.amount,0)
-  })).sort((a,b)=>b.total-a.total);
+  })).filter(c => c.total > 0).sort((a,b)=>b.total-a.total);
 
-  const maxCat = catTotals[0]?.total || 1;
-  document.getElementById("catSummary").innerHTML = catTotals.map(c =>
-        `<div class="cat-summary-row">
-          <div class="cat-summary-name">${c.emoji} ${c.label}</div>
-          <div class="cat-summary-bar-track">
-            <div class="cat-summary-bar-fill" style="width:${Math.round(c.total/maxCat*100)}%"></div>
-          </div>
-          <div class="cat-summary-val" style="color:${c.total>0?'var(--text)':'var(--muted)'};">${c.total>0?fmt(c.total):'—'}</div>
-        </div>`
-      ).join("");
+  if (catTotals.length === 0) {
+    document.getElementById("catSummary").innerHTML =
+      `<div style="text-align:center;color:var(--muted);font-size:16px;padding:12px 0;">この月度の支出記録はまだありません</div>`;
+    return;
+  }
+
+  const topCats  = catTotals.slice(0, CAT_SUMMARY_TOP_N);
+  const restCats = catTotals.slice(CAT_SUMMARY_TOP_N);
+  const restTotal = restCats.reduce((s,c)=>s+c.total,0);
+  const maxVal = topCats[0].total;
+
+  let html = topCats.map(c => catSummaryRowHtml(c, maxVal)).join("");
+
+  if (restCats.length > 0) {
+    const otherRow = {
+      emoji: catSummaryExpanded ? "▲" : "▼",
+      label: `それ以外（${restCats.length}カテゴリ）`,
+      total: restTotal,
+    };
+    html += catSummaryRowHtml(otherRow, maxVal, { muted: true, onclick: "toggleCatSummaryOther()" });
+    if (catSummaryExpanded) {
+      html += restCats.map(c => catSummaryRowHtml(c, maxVal, { sub: true })).join("");
+    }
+  }
+
+  document.getElementById("catSummary").innerHTML = html;
 }
 
 // ============================================================
@@ -1653,6 +1700,44 @@ function showPage(name) {
   if (name==="utility")    renderUtilityPage();
 }
 
+// ホーム画面の「最近の収支」プレビュー（タップ不可・非対話。直近4ヶ月分を小さく表示するだけ）
+function renderHomeMiniChart() {
+  const el = document.getElementById("homeMiniChart");
+  if (!el) return;
+  const periods = ensurePeriods();
+  if (!periods.length) { el.innerHTML = ""; return; }
+
+  const endIdx = periods.length - 1;
+  const startIdx = Math.max(0, endIdx - 3); // 直近4件のみ（プレビューなので少なめ）
+  const idxList = [];
+  for (let i = startIdx; i <= endIdx; i++) idxList.push(i);
+
+  const data = idxList.map(idx => {
+    const txs = periodTxs(idx);
+    const exp = txs.filter(t=>t.type==="expense").reduce((s,t)=>s+t.amount,0);
+    const inc = txs.filter(t=>t.type==="income").reduce((s,t)=>s+t.amount,0);
+    const d = new Date(periods[idx].start_date);
+    return { label: `${d.getMonth()+1}月`, bal: inc - exp };
+  });
+  const maxAbsBal = Math.max(...data.map(d => Math.abs(d.bal)), 1);
+  const HALF_H = 34; // プレビューなので上下34pxずつの小さめサイズ
+
+  el.innerHTML = data.map(({label,bal}) => {
+    const barH = Math.round(Math.abs(bal) / maxAbsBal * HALF_H);
+    const isSurplus = bal >= 0;
+    return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+      <div style="height:${HALF_H}px;width:100%;display:flex;align-items:flex-end;justify-content:center;">
+        <div style="width:60%;border-radius:3px 3px 0 0;background:var(--green);height:${isSurplus?barH:0}px;"></div>
+      </div>
+      <div style="width:100%;height:1px;background:var(--border);"></div>
+      <div style="height:${HALF_H}px;width:100%;display:flex;align-items:flex-start;justify-content:center;">
+        <div style="width:60%;border-radius:0 0 3px 3px;background:var(--red);height:${isSurplus?0:barH}px;"></div>
+      </div>
+      <div style="margin-top:4px;font-size:13px;color:var(--muted);">${label}</div>
+    </div>`;
+  }).join("");
+}
+
 // ランチャー（アイコングリッド）上の残高ウィジェットを、ホーム画面の集計結果を使って更新
 function updateLauncherWidget() {
   const b = document.getElementById("balanceAmount");
@@ -1661,6 +1746,7 @@ function updateLauncherWidget() {
   const lm = document.getElementById("launcherMonth");
   if (b && lb) lb.textContent = b.textContent;
   if (m && lm) lm.textContent = m.textContent;
+  renderHomeMiniChart();
 }
 
 function toggleFlowBanner(id, show) {
