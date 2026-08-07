@@ -280,7 +280,7 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
 
   <!-- レシート記録（横長・長押しで起動） -->
   <button id="receiptTile" class="receipt-wide-btn"
-          onpointerdown="startHoldReceipt()" onpointerup="cancelHoldReceipt()"
+          onpointerdown="startHoldReceipt()" onpointerup="endHoldReceipt()"
           onpointerleave="cancelHoldReceipt()" onpointercancel="cancelHoldReceipt()"
           oncontextmenu="return false;">
     <span id="receiptBtnFill" class="receipt-fill"></span>
@@ -760,7 +760,7 @@ function getBudgetTotal(periodIdx) {
 // ============================================================
 // バージョン情報
 // ============================================================
-const APP_VERSION = "2.23.1"; // ← 更新するたびに番号を上げる
+const APP_VERSION = "2.23.2"; // ← 更新するたびに番号を上げる
 
 // ============================================================
 // ストレージ
@@ -2357,32 +2357,45 @@ function deleteFixedCostItem(id) {
 
 // 誤操作防止用の長押し時間（レシート記録ボタンで使用）
 const HOLD_DURATION = 1200; // ms
+const RECEIPT_SHORTCUT_URL = "shortcuts://run-shortcut?name=%E3%83%AC%E3%82%B7%E3%83%BC%E3%83%88%E8%A8%98%E9%8C%B2%EF%BC%88%E5%AE%B6%E8%A8%88%E7%B0%BFPWA%E7%89%88%EF%BC%89";
 
 // レシート記録ボタンの長押し検出（誤操作でShortcutsが起動しないように）
-let receiptHoldTimer = null;
+// ※ shortcuts://への画面遷移は、setTimeoutの中など「ユーザー操作から間接的な」タイミングで行うと
+//    iOS Safariに無言でブロックされてしまう（ゲージだけ動いて何も起きないバグの原因）。
+//    そのため遷移そのものは、ユーザー操作に直結するpointerupイベントの中で同期的に行う。
+let receiptHoldStart = null;
 let receiptHoldInterval = null;
-const RECEIPT_SHORTCUT_URL = "shortcuts://run-shortcut?name=%E3%83%AC%E3%82%B7%E3%83%BC%E3%83%88%E8%A8%98%E9%8C%B2%EF%BC%88%E5%AE%B6%E8%A8%88%E7%B0%BFPWA%E7%89%88%EF%BC%89";
 
 function startHoldReceipt() {
   const fill = document.getElementById("receiptBtnFill");
   if (!fill) return;
-  let elapsed = 0;
+  receiptHoldStart = Date.now();
   fill.style.width = "0%";
   receiptHoldInterval = setInterval(() => {
-    elapsed += 30;
+    if (receiptHoldStart === null) return;
+    const elapsed = Date.now() - receiptHoldStart;
     fill.style.width = Math.min((elapsed / HOLD_DURATION) * 100, 100) + "%";
   }, 30);
-  receiptHoldTimer = setTimeout(() => {
-    cancelHoldReceipt();
-    window.location.href = RECEIPT_SHORTCUT_URL;
-  }, HOLD_DURATION);
 }
 
+// 指を離した時：規定時間以上ホールドしていれば、その場でShortcutsを起動する
+function endHoldReceipt() {
+  const heldLongEnough = receiptHoldStart !== null && (Date.now() - receiptHoldStart) >= HOLD_DURATION;
+  resetHoldReceiptState();
+  if (heldLongEnough) {
+    window.location.href = RECEIPT_SHORTCUT_URL;
+  }
+}
+
+// 指がボタンの外に出た／中断された時：起動せずキャンセルするだけ
 function cancelHoldReceipt() {
-  clearTimeout(receiptHoldTimer);
+  resetHoldReceiptState();
+}
+
+function resetHoldReceiptState() {
   clearInterval(receiptHoldInterval);
-  receiptHoldTimer = null;
   receiptHoldInterval = null;
+  receiptHoldStart = null;
   const fill = document.getElementById("receiptBtnFill");
   if (fill) fill.style.width = "0%";
 }
