@@ -320,8 +320,8 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
 
   <!-- 最近の収支（小さいプレビュー。タップするとグラフタブの詳細を開く） -->
   <div class="graph-card" style="margin-top:16px;cursor:pointer;" onclick="showPage('graph')">
-    <div class="graph-title">最近の収支（1年）</div>
-    <div id="homeMiniChart" style="display:flex;align-items:stretch;gap:3px;height:110px;"></div>
+    <div class="graph-title">最近の収支</div>
+    <div id="homeMiniChart" style="display:flex;align-items:stretch;gap:20px;height:150px;"></div>
     <div class="legend" style="margin-top:4px;">
       <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>収入</div>
       <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>支出</div>
@@ -473,12 +473,12 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
   </div>
   <!-- 月次棒グラフ -->
   <div class="graph-card">
-    <div class="graph-title">月別の黒字・赤字（直近6ヶ月）</div>
-    <!-- 差額（黒字/赤字）の棒グラフ＋月ラベルを一体化 -->
-    <div id="barChart" style="display:flex;align-items:stretch;gap:6px;height:170px;margin-bottom:0;overflow:hidden;"></div>
+    <div class="graph-title">月別の収入・支出（直近1年）</div>
+    <!-- 収入（緑・上）／支出（赤・下）の棒グラフ＋月ラベルを一体化 -->
+    <div id="barChart" style="display:flex;align-items:stretch;gap:4px;height:170px;margin-bottom:0;overflow:hidden;"></div>
     <div class="legend" style="margin-top:6px;">
-      <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>黒字の月</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>赤字の月</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>収入</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>支出</div>
     </div>
     <!-- 選択月の収支詳細 -->
     <div id="monthDetail" style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);"></div>
@@ -770,7 +770,7 @@ function getBudgetTotal(periodIdx) {
 // ============================================================
 // バージョン情報
 // ============================================================
-const APP_VERSION = "2.25.0"; // ← 更新するたびに番号を上げる
+const APP_VERSION = "2.26.0"; // ← 更新するたびに番号を上げる
 
 // ============================================================
 // ストレージ
@@ -1544,9 +1544,9 @@ function renderGraph() {
 
   document.getElementById("graphMonthTitle").textContent = periodLabel(viewPeriodIndex);
 
-  // 表示中の月度を最新とみなし、直近最大6件の月度を表示する（作成済みの月度のみ）
+  // 表示中の月度を最新とみなし、直近最大12件（1年分）の月度を表示する（作成済みの月度のみ）
   const endIdx = viewPeriodIndex;
-  const startIdx = Math.max(0, endIdx - 5);
+  const startIdx = Math.max(0, endIdx - 11);
   const idxList = [];
   for (let i = startIdx; i <= endIdx; i++) idxList.push(i);
 
@@ -1554,40 +1554,43 @@ function renderGraph() {
     selectedGraphPeriodIdx = endIdx;
   }
 
-  // 各月度の黒字/赤字額を計算し、最大の絶対値でスケール自動調整
+  // 各月度の収入・支出額を計算し、両者をまたいだ最大額でスケール自動調整
   const periodData = idxList.map(idx => {
     const txs = periodTxs(idx);
     const exp = txs.filter(t=>t.type==="expense").reduce((s,t)=>s+t.amount,0);
     const inc = txs.filter(t=>t.type==="income").reduce((s,t)=>s+t.amount,0);
     const d = new Date(periods[idx].start_date);
-    return { idx, label: `${d.getMonth()+1}月度`, bal: inc - exp };
+    return { idx, label: `${d.getMonth()+1}月`, exp, inc };
   });
-  const maxAbsBal = Math.max(...periodData.map(d => Math.abs(d.bal)), 1);
+  const maxAmt = Math.max(...periodData.map(d => Math.max(d.exp, d.inc)), 1);
 
   const barChart = document.getElementById("barChart");
-  // コンテナの実際の高さからボタン・ゼロ線分を引いて、プラス側/マイナス側それぞれの最大高さを計算
+  // コンテナの実際の高さからボタン・ゼロ線分を引いて、収入側/支出側それぞれの最大高さを計算
   const HALF_MAX_H = Math.max(((barChart.clientHeight || 170) - 32) / 2, 40);
+  // 本数が多いので、月ラベルは選択中の月のみ丸ボタン表示、それ以外は数字だけ細く表示する
+  const many = periodData.length > 6;
 
-  barChart.innerHTML = periodData.map(({idx,label,bal}) => {
-    const barH = Math.round(Math.abs(bal) / maxAbsBal * HALF_MAX_H);
-    const isSurplus = bal >= 0;
+  barChart.innerHTML = periodData.map(({idx,label,exp,inc}) => {
+    const incH = Math.round(inc / maxAmt * HALF_MAX_H);
+    const expH = Math.round(exp / maxAmt * HALF_MAX_H);
     const isSelected = selectedGraphPeriodIdx === idx;
+    const barW = many ? "80%" : "65%";
     return `<div class="bar-col" onclick="selectGraphPeriod(${idx})"
-      style="flex:1;display:flex;flex-direction:column;align-items:center;cursor:pointer;">
+      style="flex:1;display:flex;flex-direction:column;align-items:center;cursor:pointer;min-width:0;">
       <div style="height:${HALF_MAX_H}px;width:100%;display:flex;align-items:flex-end;justify-content:center;">
-        <div style="width:65%;border-radius:4px 4px 0 0;background:var(--green);height:${isSurplus?barH:0}px;"></div>
+        <div style="width:${barW};border-radius:3px 3px 0 0;background:var(--green);height:${incH}px;"></div>
       </div>
       <div style="width:100%;height:1px;background:var(--border);"></div>
       <div style="height:${HALF_MAX_H}px;width:100%;display:flex;align-items:flex-start;justify-content:center;">
-        <div style="width:65%;border-radius:0 0 4px 4px;background:var(--red);height:${isSurplus?0:barH}px;"></div>
+        <div style="width:${barW};border-radius:0 0 3px 3px;background:var(--red);height:${expH}px;"></div>
       </div>
       <button style="
-        margin-top:5px;padding:3px 6px;border-radius:20px;
-        border:1px solid ${isSelected?'var(--green)':'var(--border)'};
+        margin-top:5px;padding:3px ${many ? '2px' : '6px'};border-radius:20px;
+        border:1px solid ${isSelected?'var(--green)':(many?'transparent':'var(--border)')};
         background:${isSelected?'var(--green-l)':'transparent'};
         color:${isSelected?'var(--green-d)':'var(--sub)'};
-        font-size:15px;font-weight:${isSelected?700:400};
-        cursor:pointer;font-family:inherit;white-space:nowrap;width:100%;">
+        font-size:${many ? '13px' : '15px'};font-weight:${isSelected?700:400};
+        cursor:pointer;font-family:inherit;white-space:nowrap;width:100%;overflow:hidden;">
         ${label}
       </button>
     </div>`;
@@ -1705,7 +1708,8 @@ function showPage(name) {
 }
 
 // ホーム画面の「最近の収支」プレビュー（タップ不可・非対話）
-// 収入＝緑の棒が上に、支出＝赤の棒が下に伸びる。直近12ヶ月分を小さく表示する。
+// 直近2ヶ月分のみ。本数が少ないので、収入・支出の金額も一緒に表示する。
+// 収入＝緑の棒が上に、支出＝赤の棒が下に伸びる。
 function renderHomeMiniChart() {
   const el = document.getElementById("homeMiniChart");
   if (!el) return;
@@ -1713,7 +1717,7 @@ function renderHomeMiniChart() {
   if (!periods.length) { el.innerHTML = ""; return; }
 
   const endIdx = periods.length - 1;
-  const startIdx = Math.max(0, endIdx - 11); // 直近12件（1年分）
+  const startIdx = Math.max(0, endIdx - 1); // 直近2件のみ
   const idxList = [];
   for (let i = startIdx; i <= endIdx; i++) idxList.push(i);
 
@@ -1722,24 +1726,26 @@ function renderHomeMiniChart() {
     const exp = txs.filter(t=>t.type==="expense").reduce((s,t)=>s+t.amount,0);
     const inc = txs.filter(t=>t.type==="income").reduce((s,t)=>s+t.amount,0);
     const d = new Date(periods[idx].start_date);
-    return { label: `${d.getMonth()+1}`, exp, inc };
+    return { label: `${d.getMonth()+1}月度`, exp, inc };
   });
   // 収入・支出をまたいだ最大額でスケールを統一（上下の高さが同じ基準になる）
   const maxAmt = Math.max(...data.map(d => Math.max(d.exp, d.inc)), 1);
-  const HALF_H = 40; // 上下それぞれ40pxずつ
+  const HALF_H = 46; // 上下それぞれ46pxずつ
 
   el.innerHTML = data.map(({label,exp,inc}) => {
     const incH = Math.round(inc / maxAmt * HALF_H);
     const expH = Math.round(exp / maxAmt * HALF_H);
     return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;min-width:0;">
+      <div style="font-size:15px;font-weight:700;color:var(--green-d);margin-bottom:2px;">${fmt(inc)}</div>
       <div style="height:${HALF_H}px;width:100%;display:flex;align-items:flex-end;justify-content:center;">
-        <div style="width:70%;border-radius:2px 2px 0 0;background:var(--green);height:${incH}px;"></div>
+        <div style="width:50%;border-radius:3px 3px 0 0;background:var(--green);height:${incH}px;"></div>
       </div>
       <div style="width:100%;height:1px;background:var(--border);"></div>
       <div style="height:${HALF_H}px;width:100%;display:flex;align-items:flex-start;justify-content:center;">
-        <div style="width:70%;border-radius:0 0 2px 2px;background:var(--red);height:${expH}px;"></div>
+        <div style="width:50%;border-radius:0 0 3px 3px;background:var(--red);height:${expH}px;"></div>
       </div>
-      <div style="margin-top:3px;font-size:11px;color:var(--muted);">${label}</div>
+      <div style="font-size:15px;font-weight:700;color:var(--red);margin-top:2px;">${fmt(exp)}</div>
+      <div style="margin-top:2px;font-size:14px;color:var(--muted);">${label}</div>
     </div>`;
   }).join("");
 }
