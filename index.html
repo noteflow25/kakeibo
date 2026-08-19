@@ -320,8 +320,12 @@ body{background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;paddin
 
   <!-- 最近の収支（小さいプレビュー。タップするとグラフタブの詳細を開く） -->
   <div class="graph-card" style="margin-top:16px;cursor:pointer;" onclick="showPage('graph')">
-    <div class="graph-title">最近の収支</div>
-    <div id="homeMiniChart" style="display:flex;align-items:stretch;gap:6px;height:100px;"></div>
+    <div class="graph-title">最近の収支（1年）</div>
+    <div id="homeMiniChart" style="display:flex;align-items:stretch;gap:3px;height:110px;"></div>
+    <div class="legend" style="margin-top:4px;">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>収入</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>支出</div>
+    </div>
   </div>
 </div>
 
@@ -766,7 +770,7 @@ function getBudgetTotal(periodIdx) {
 // ============================================================
 // バージョン情報
 // ============================================================
-const APP_VERSION = "2.24.0"; // ← 更新するたびに番号を上げる
+const APP_VERSION = "2.25.0"; // ← 更新するたびに番号を上げる
 
 // ============================================================
 // ストレージ
@@ -1700,7 +1704,8 @@ function showPage(name) {
   if (name==="utility")    renderUtilityPage();
 }
 
-// ホーム画面の「最近の収支」プレビュー（タップ不可・非対話。直近4ヶ月分を小さく表示するだけ）
+// ホーム画面の「最近の収支」プレビュー（タップ不可・非対話）
+// 収入＝緑の棒が上に、支出＝赤の棒が下に伸びる。直近12ヶ月分を小さく表示する。
 function renderHomeMiniChart() {
   const el = document.getElementById("homeMiniChart");
   if (!el) return;
@@ -1708,7 +1713,7 @@ function renderHomeMiniChart() {
   if (!periods.length) { el.innerHTML = ""; return; }
 
   const endIdx = periods.length - 1;
-  const startIdx = Math.max(0, endIdx - 3); // 直近4件のみ（プレビューなので少なめ）
+  const startIdx = Math.max(0, endIdx - 11); // 直近12件（1年分）
   const idxList = [];
   for (let i = startIdx; i <= endIdx; i++) idxList.push(i);
 
@@ -1717,23 +1722,24 @@ function renderHomeMiniChart() {
     const exp = txs.filter(t=>t.type==="expense").reduce((s,t)=>s+t.amount,0);
     const inc = txs.filter(t=>t.type==="income").reduce((s,t)=>s+t.amount,0);
     const d = new Date(periods[idx].start_date);
-    return { label: `${d.getMonth()+1}月`, bal: inc - exp };
+    return { label: `${d.getMonth()+1}`, exp, inc };
   });
-  const maxAbsBal = Math.max(...data.map(d => Math.abs(d.bal)), 1);
-  const HALF_H = 34; // プレビューなので上下34pxずつの小さめサイズ
+  // 収入・支出をまたいだ最大額でスケールを統一（上下の高さが同じ基準になる）
+  const maxAmt = Math.max(...data.map(d => Math.max(d.exp, d.inc)), 1);
+  const HALF_H = 40; // 上下それぞれ40pxずつ
 
-  el.innerHTML = data.map(({label,bal}) => {
-    const barH = Math.round(Math.abs(bal) / maxAbsBal * HALF_H);
-    const isSurplus = bal >= 0;
-    return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+  el.innerHTML = data.map(({label,exp,inc}) => {
+    const incH = Math.round(inc / maxAmt * HALF_H);
+    const expH = Math.round(exp / maxAmt * HALF_H);
+    return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;min-width:0;">
       <div style="height:${HALF_H}px;width:100%;display:flex;align-items:flex-end;justify-content:center;">
-        <div style="width:60%;border-radius:3px 3px 0 0;background:var(--green);height:${isSurplus?barH:0}px;"></div>
+        <div style="width:70%;border-radius:2px 2px 0 0;background:var(--green);height:${incH}px;"></div>
       </div>
       <div style="width:100%;height:1px;background:var(--border);"></div>
       <div style="height:${HALF_H}px;width:100%;display:flex;align-items:flex-start;justify-content:center;">
-        <div style="width:60%;border-radius:0 0 3px 3px;background:var(--red);height:${isSurplus?0:barH}px;"></div>
+        <div style="width:70%;border-radius:0 0 2px 2px;background:var(--red);height:${expH}px;"></div>
       </div>
-      <div style="margin-top:4px;font-size:13px;color:var(--muted);">${label}</div>
+      <div style="margin-top:3px;font-size:11px;color:var(--muted);">${label}</div>
     </div>`;
   }).join("");
 }
